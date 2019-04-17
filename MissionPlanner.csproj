@@ -169,6 +169,10 @@
       <Project>{d0c39d9d-bed0-418b-9a5e-713176caf40c}</Project>
       <Name>GMap.NET.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="ExtLibs\GMap.NET.Drawing\GMap.NET.Drawing.csproj">
+      <Project>{d773accd-9c2d-4e94-a967-faa7ea2d21cb}</Project>
+      <Name>GMap.NET.Drawing</Name>
+    </ProjectReference>
     <ProjectReference Include="ExtLibs\GMap.NET.WindowsForms\GMap.NET.WindowsForms.csproj">
       <Project>{e06def77-f933-42fb-afd7-db2d0d8d6a98}</Project>
       <Name>GMap.NET.WindowsForms</Name>
@@ -317,9 +321,9 @@
     </PackageReference>
     <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
     <PackageReference Include="System.IO.Ports" Version="4.5.0" />
-    <PackageReference Include="System.Reactive" Version="4.1.0" />
-    <PackageReference Include="System.Reactive.Core" Version="4.1.0" />
-    <PackageReference Include="System.Reactive.Linq" Version="4.1.0" />
+    <PackageReference Include="System.Reactive" Version="4.0.0" />
+    <PackageReference Include="System.Reactive.Core" Version="4.0.0" />
+    <PackageReference Include="System.Reactive.Linq" Version="4.0.0" />
     <PackageReference Include="Unofficial.ObjectListView" version="2.6.0" targetFramework="net40" />
     <PackageReference Include="zlib.net" version="1.0.4.0" targetFramework="net40" />
   </ItemGroup>
@@ -5137,7 +5141,6 @@
     <None Include="Scripts\TAKEOFF.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Compile Include="Swarm\GL2.cs" />
     <None Include="version.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
