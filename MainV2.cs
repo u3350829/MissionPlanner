@@ -18,12 +18,14 @@ using MissionPlanner.Log;
 using Transitions;
 using MissionPlanner.Warnings;
 using System.Collections.Concurrent;
+using System.Drawing.Imaging;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using MissionPlanner.ArduPilot;
 using MissionPlanner.Utilities.AltitudeAngel;
 using System.Threading.Tasks;
 using GMap.NET.WindowsForms;
+using SkiaSharp;
 
 namespace MissionPlanner
 {
@@ -1772,7 +1774,8 @@ namespace MissionPlanner
 
             _connectionControl.UpdateSysIDS();
 
-            loadph_serial();
+            if (comPort.BaseStream.IsOpen)
+                loadph_serial();
         }
 
         void loadph_serial()
@@ -1801,6 +1804,77 @@ namespace MissionPlanner
             {
                 
             }
+
+            try
+            {
+                if (comPort.MAV.SerialString == "")
+                    return;
+
+                if (comPort.MAV.SerialString.Contains("CubeBlack") && 
+                    comPort.MAV.param.ContainsKey("INS_ACC3_ID") && comPort.MAV.param["INS_ACC3_ID"].Value == 0 &&
+                    comPort.MAV.param.ContainsKey("INS_GYR3_ID") && comPort.MAV.param["INS_GYR3_ID"].Value == 0 &&
+                    comPort.MAV.param.ContainsKey("INS_ENABLE_MASK") && comPort.MAV.param["INS_ENABLE_MASK"].Value >= 7)
+                {
+                    var url = String.Format(
+                        "http://sb.cubepilot.org:8080/CubeSB?BRD_TYPE={0}&SerialNo={1}&INS_ACC_ID={2}&INS_ACC2_ID={3}&INS_ACC3_ID={4}&INS_GYR_ID={5}&INS_GYR2_ID={6}&INS_GYR3_ID={7}&Baro1={8}&Baro2={9}",
+                        comPort.MAV.param["BRD_TYPE"], comPort.MAV.SerialString,
+                        comPort.MAV.param["INS_ACC_ID"], comPort.MAV.param["INS_ACC2_ID"],
+                        comPort.MAV.param["INS_ACC3_ID"],
+                        comPort.MAV.param["INS_GYR_ID"], comPort.MAV.param["INS_GYR2_ID"],
+                        comPort.MAV.param["INS_GYR3_ID"],
+                        comPort.MAV.cs.press_abs, comPort.MAV.cs.press_abs2);
+                    CustomMessageBox.Show("Your board has a Critical service bulletin please see [link;"+url+";Click here] via DEV_ID",Strings.ERROR);
+                }
+            } catch { }
+
+            try
+            {
+                if (comPort.MAV.SerialString == "")
+                    return;
+
+                // brd type should be 3
+                // devids show which sensor is not detected
+                // baro does not list a devid
+
+                //devop read spi lsm9ds0_ext_am 0 0 0x8f 1
+                if (comPort.MAV.SerialString.Contains("CubeBlack"))
+                {
+                    Task.Run(() =>
+                        {
+                            bool bad1 = false;
+                            bool bad2 = false;
+
+                            var data = comPort.device_op(comPort.MAV.sysid, comPort.MAV.compid,
+                                MAVLink.DEVICE_OP_BUSTYPE.SPI,
+                                "lsm9ds0_ext_g", 0, 0, 0x8f, 1);
+                            if (data.Length != 0 && (data[0] != 0xd4 && data[0] != 0xd7))
+                                bad1 = true;
+
+                            data = comPort.device_op(comPort.MAV.sysid, comPort.MAV.compid,
+                                MAVLink.DEVICE_OP_BUSTYPE.SPI,
+                                "lsm9ds0_ext_am", 0, 0, 0x8f, 1);
+                            if (data.Length != 0 && data[0] != 0x49)
+                                bad2 = true;
+
+                            if (bad1 && bad2)
+                                this.BeginInvoke((Action) delegate
+                                {
+                                    var url = String.Format(
+                                        "http://sb.cubepilot.org:8080/CubeSB?BRD_TYPE={0}&SerialNo={1}&INS_ACC_ID={2}&INS_ACC2_ID={3}&INS_ACC3_ID={4}&INS_GYR_ID={5}&INS_GYR2_ID={6}&INS_GYR3_ID={7}&Baro1={8}&Baro2={9}",
+                                        comPort.MAV.param["BRD_TYPE"], comPort.MAV.SerialString,
+                                        comPort.MAV.param["INS_ACC_ID"], comPort.MAV.param["INS_ACC2_ID"],
+                                        comPort.MAV.param["INS_ACC3_ID"],
+                                        comPort.MAV.param["INS_GYR_ID"], comPort.MAV.param["INS_GYR2_ID"],
+                                        comPort.MAV.param["INS_GYR3_ID"],
+                                        comPort.MAV.cs.press_abs, comPort.MAV.cs.press_abs2);
+                                    CustomMessageBox.Show(
+                                        "Your board has a Critical service bulletin please see [link;" + url + ";Click here] via SPI SCAN",
+                                        Strings.ERROR);
+                                });
+                        });
+                }
+
+            } catch { }
         }
 
         private void CMB_serialport_SelectedIndexChanged(object sender, EventArgs e)
@@ -2956,22 +3030,29 @@ namespace MissionPlanner
 
                     return currentmode;
                 }
-                catch
+               catch
                 {
                     return null;
                 }
             };
 
-            GStreamer.onNewImage += (sender, image) => { GCSViews.FlightData.myhud.bgimage = image; };
+            GStreamer.onNewImage += (sender, image) =>
+            {
+                var old = GCSViews.FlightData.myhud.bgimage;
+                GCSViews.FlightData.myhud.bgimage = new Bitmap(image.Width, image.Height, 4*image.Width, PixelFormat.Format32bppPArgb,
+                    (image as Utilities.Drawing.Bitmap).LockBits(Rectangle.Empty, null,SKColorType.Bgra8888).Scan0);
+                if (old != null)
+                    old.Dispose();
+            };
 
             vlcrender.onNewImage += (sender, image) =>
             {
                 var old = GCSViews.FlightData.myhud.bgimage;
-                GCSViews.FlightData.myhud.bgimage = image;
+                GCSViews.FlightData.myhud.bgimage = new Bitmap(image.Width, image.Height, 4 * image.Width, PixelFormat.Format32bppPArgb,
+                    (image as Utilities.Drawing.Bitmap).LockBits(Rectangle.Empty, null,SKColorType.Bgra8888).Scan0);
                 if (old != null)
-                    old.Dispose()
-                        ;
-            };
+                    old.Dispose();
+                };
 
             //ZeroConf.EnumerateAllServicesFromAllHosts();
 
