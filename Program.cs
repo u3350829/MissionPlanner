@@ -63,21 +63,6 @@ namespace MissionPlanner
             Start(args);
         }
 
-        private static void getBrushs()
-        {
-            var brushes = typeof(Brushes).GetProperties();
-            var template = "public static Brush {0} {{get;}} = new SolidBrush() {{ nativeBrush = new SKPaint() {{ Color = new SKColor(0x{1})}} }};";
-            foreach (var brush in brushes)
-            {
-                Console.WriteLine(template, brush.Name, (brush.GetValue(null) as SolidBrush).Color.ToArgb().ToString("X8"));
-            }
-
-             brushes = typeof(SystemBrushes).GetProperties();
-            foreach (var brush in brushes)
-            {
-                Console.WriteLine(template, brush.Name, (brush.GetValue(null) as SolidBrush).Color.ToArgb().ToString("X8"));
-            }
-        }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static void Start(string[] args)
@@ -147,6 +132,19 @@ namespace MissionPlanner
             if (File.Exists(Settings.GetRunningDirectory() + "splashbg.png")) // 600*375
                 SplashBG = new Bitmap(Settings.GetRunningDirectory() + "splashbg.png");
 
+            try
+            {
+                var file = NativeLibrary.GetLibraryPathname("libSkiaSharp");
+                var ptr = NativeLibrary.LoadLibrary(file);
+                if (ptr != IntPtr.Zero)
+                {
+                    log.Info("SkiaLoaded");
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
+            }
 
             Splash = new MissionPlanner.Splash();
             if (SplashBG != null)
@@ -170,10 +168,11 @@ namespace MissionPlanner
             Application.DoEvents();
             Application.DoEvents();
 
-            CustomMessageBox.ShowEvent += (text, caption, buttons, icon) =>
-            {
-                return (CustomMessageBox.DialogResult)(int)MsgBox.CustomMessageBox.Show(text, caption, (MessageBoxButtons)(int)buttons, (MessageBoxIcon)(int)icon);
-            };
+            CustomMessageBox.ShowEvent += (text, caption, buttons, icon, yestext,notext) =>
+                {
+                    return (CustomMessageBox.DialogResult) (int) MsgBox.CustomMessageBox.Show(text, caption,
+                        (MessageBoxButtons) (int) buttons, (MessageBoxIcon) (int) icon, yestext, notext);
+                };
 
             // setup theme provider
             MsgBox.CustomMessageBox.ApplyTheme += MissionPlanner.Utilities.ThemeManager.ApplyThemeTo;

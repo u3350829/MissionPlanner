@@ -26,6 +26,8 @@ namespace MissionPlanner.Utilities.Drawing
 
         public void DrawString(string text, SKPaint defaultFont, Brush red, int x, int y, StringFormat genericDefault)
         {
+            if (String.IsNullOrEmpty(text))
+                return;
             var paint = red.nativeBrush;
             paint.TextSize = defaultFont.TextSize;
             paint.Typeface = defaultFont.Typeface;
@@ -37,6 +39,7 @@ namespace MissionPlanner.Utilities.Drawing
         }
 
         public CompositingMode CompositingMode { get; set; }
+        public SmoothingMode SmoothingMode { get; set; }
 
         public void DrawImage(Image image, long x, long y, long width, long height)
         {
@@ -53,6 +56,16 @@ namespace MissionPlanner.Utilities.Drawing
         public void DrawImage(Image original, Rectangle rectangle, int x, int y, int originalWidth, int originalHeight, GraphicsUnit pixel, ImageAttributes attributes)
         {
             DrawImage(original, x, y, originalWidth, originalHeight);
+        }
+
+        public void DrawPath(Pen p, GraphicsPath pth)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FillPath(SolidBrush brush, GraphicsPath pth)
+        {
+            throw new NotImplementedException();
         }
     }
 }

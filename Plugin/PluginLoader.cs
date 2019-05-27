@@ -15,6 +15,8 @@ namespace MissionPlanner.Plugin
 
         public static List<Plugin> Plugins = new List<Plugin>();
 
+        public static Dictionary<string,string[]> filecache = new Dictionary<string, string[]>();
+
         static Assembly LoadFromSameFolder(object sender, ResolveEventArgs args)
         {
             if (args.RequestingAssembly == null)
@@ -22,10 +24,19 @@ namespace MissionPlanner.Plugin
 
             // check install folder
             string folderPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string[] search = Directory.GetFiles(folderPath, new AssemblyName(args.Name).Name + ".dll",
-                SearchOption.AllDirectories);
+            if (filecache.ContainsKey(folderPath))
+            {
 
-            foreach (var file in search)
+            }
+            else
+            {
+                string[] search1 = Directory.GetFiles(folderPath, "*.dll",
+                    SearchOption.AllDirectories);
+
+                filecache[folderPath] = search1;
+            }
+
+            foreach (var file in filecache[folderPath].Where(a=>a.ToLower().Contains(new AssemblyName(args.Name).Name.ToLower() + ".dll")))
             {
                 try
                 {
@@ -37,10 +48,19 @@ namespace MissionPlanner.Plugin
 
             // check local directory
             folderPath = Path.GetDirectoryName(args.RequestingAssembly.Location);
-            search = Directory.GetFiles(folderPath, new AssemblyName(args.Name).Name + ".dll",
-                SearchOption.AllDirectories);
+            if (filecache.ContainsKey(folderPath))
+            {
 
-            foreach (var file in search)
+            }
+            else
+            {
+                string[] search1 = Directory.GetFiles(folderPath, "*.dll",
+                    SearchOption.AllDirectories);
+
+                filecache[folderPath] = search1;
+            }
+
+            foreach (var file in filecache[folderPath].Where(a => a.ToLower().Contains(new AssemblyName(args.Name).Name.ToLower() + ".dll")))
             {
                 try
                 {
@@ -57,14 +77,26 @@ namespace MissionPlanner.Plugin
 
         public static void Load(String file)
         {
-            if (!File.Exists(file) || !file.EndsWith(".dll", true, null) || file.ToLower().Contains("microsoft.") || file.ToLower().Contains("system.") || file.ToLower().Contains("missionplanner.grid.dll"))
+            if (!File.Exists(file) || !file.EndsWith(".dll", true, null) ||
+                file.ToLower().Contains("microsoft.") ||
+                file.ToLower().Contains("system.") ||
+                file.ToLower().Contains("missionplanner.grid.dll") ||
+                file.ToLower().Contains("usbserialforandroid") 
+                )
                 return;
 
+            // file exists in the install directory, so skip trying to load it as a plugin
+            if (File.Exists(file) && File.Exists(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
+                                                 Path.DirectorySeparatorChar + Path.GetFileName(file)))
+                return;
+            
             AppDomain currentDomain = AppDomain.CurrentDomain;
             currentDomain.AssemblyResolve += new ResolveEventHandler(LoadFromSameFolder);
 
             Assembly asm = null;
 
+            DateTime startDateTime = DateTime.Now;
+            
             try
             {
                 asm = Assembly.LoadFile(file);
@@ -112,6 +144,8 @@ namespace MissionPlanner.Plugin
             {
                 log.Error("Failed to load plugin " + file, ex);
             }
+
+            log.InfoFormat("Plugin Load {0} time {1} s", file, (DateTime.Now - startDateTime).TotalSeconds);
         }
 
         public static void LoadAll()
