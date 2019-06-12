@@ -16,7 +16,11 @@ namespace MissionPlanner.Utilities
     {
         public static string ToJSON(this object msg)
         {
-            return JsonConvert.SerializeObject(msg);
+            return JsonConvert.SerializeObject(msg, Formatting.Indented, new JsonSerializerSettings()
+            {
+                Error =
+                    (sender, args) => { args.ErrorContext.Handled = true; }
+            });
         }
 
         public static string RemoveFromEnd(this string s, string suffix)
@@ -29,6 +33,23 @@ namespace MissionPlanner.Utilities
             {
                 return s;
             }
+        }
+
+        public static byte[] MakeSize(this byte[] buffer, int length)
+        {
+            if (buffer.Length == length)
+                return buffer;
+            Array.Resize(ref buffer, length);
+            return buffer;
+        }
+
+        public static byte[] MakeBytesSize(this string item, int length)
+        {
+            var buffer = ASCIIEncoding.ASCII.GetBytes(item);
+            if (buffer.Length == length)
+                return buffer;
+            Array.Resize(ref buffer, length);
+            return buffer;
         }
 
         public static string TrimUnPrintable(this string input)

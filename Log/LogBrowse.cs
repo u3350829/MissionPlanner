@@ -36,6 +36,7 @@ namespace MissionPlanner.Log
         List<TextObj> ModePolyCache = new List<TextObj>();
         List<TextObj> MSGCache = new List<TextObj>();
         List<TextObj> ErrorCache = new List<TextObj>();
+        List<TextObj> EVCache = new List<TextObj>();
         List<TextObj> TimeCache = new List<TextObj>();
         DFLog.DFItem[] gpscache = new DFLog.DFItem[0];
 
@@ -167,10 +168,10 @@ namespace MissionPlanner.Log
 
         List<displaylist> graphs = new List<displaylist>()
         {
-            new displaylist() {Name = "None"},
+            new displaylist() {Name = "a/None"},
             new displaylist()
             {
-                Name = "Mechanical Failure",
+                Name = "Builtin/Mechanical Failure",
                 items = new displayitem[]
                 {
                     new displayitem() {type = "ATT", field = "Roll"},
@@ -183,7 +184,7 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "Mechanical Failure - Stab",
+                Name = "Builtin/Mechanical Failure - Stab",
                 items =
                     new displayitem[]
                     {
@@ -193,7 +194,7 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "Mechanical Failure - Auto",
+                Name = "Builtin/Mechanical Failure - Auto",
                 items =
                     new displayitem[]
                     {
@@ -203,7 +204,7 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "Vibrations",
+                Name = "Builtin/Vibrations",
                 items =
                     new displayitem[]
                     {
@@ -214,7 +215,7 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "Vibrations 3.3",
+                Name = "Builtin/Vibrations 3.3",
                 items = new displayitem[]
                 {
                     new displayitem() {type = "VIBE", field = "VibeX"},
@@ -227,7 +228,7 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "GPS Glitch",
+                Name = "Builtin/GPS Glitch",
                 items =
                     new displayitem[]
                     {
@@ -237,7 +238,7 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "Power Issues",
+                Name = "Builtin/Power Issues",
                 items = new displayitem[]
                 {
                     new displayitem() {type = "CURR", field = "Vcc"},
@@ -246,12 +247,12 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "Errors",
+                Name = "Builtin/Errors",
                 items = new displayitem[] {new displayitem() {type = "ERR", field = "ECode"}}
             },
             new displaylist()
             {
-                Name = "Battery Issues",
+                Name = "Builtin/Battery Issues",
                 items =
                     new displayitem[]
                     {
@@ -262,7 +263,7 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "imu consistency xyz",
+                Name = "Builtin/imu consistency xyz",
                 items = new displayitem[]
                 {
                     new displayitem() {type = "IMU", field = "AccX"},
@@ -275,7 +276,7 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "mag consistency xyz",
+                Name = "Builtin/mag consistency xyz",
                 items = new displayitem[]
                 {
                     new displayitem() {type = "MAG", field = "MagX"},
@@ -288,7 +289,7 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "copter loiter",
+                Name = "Builtin/copter loiter",
                 items = new displayitem[]
                 {
                     new displayitem() {type = "NTUN", field = "DVelX"},
@@ -299,7 +300,7 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "copter althold",
+                Name = "Builtin/copter althold",
                 items = new displayitem[]
                 {
                     new displayitem() {type = "CTUN", field = "BarAlt"},
@@ -310,7 +311,7 @@ namespace MissionPlanner.Log
             },
             new displaylist()
             {
-                Name = "ekf VEL tune",
+                Name = "Builtin/ekf VEL tune",
                 items = new displayitem[]
                 {
                     new displayitem() {type = "NKF3", field = "IVN"},
@@ -400,44 +401,57 @@ namespace MissionPlanner.Log
 
             List<graphitem> items = new List<graphitem>();
 
-            using (
-                XmlReader reader =
-                    XmlReader.Create(Settings.GetRunningDirectory() + "mavgraphs.xml"))
+            var files = Directory.GetFiles(Settings.GetRunningDirectory() + Path.DirectorySeparatorChar + "graphs",
+                "*.xml");
+
+            foreach (var file in files)
             {
-                while (reader.Read())
+                try
                 {
-                    if (reader.ReadToFollowing("graph"))
+                    using (
+                        XmlReader reader =
+                            XmlReader.Create(file))
                     {
-                        graphitem newGraphitem = new graphitem();
-
-                        for (int a = 0; a < reader.AttributeCount; a++)
+                        while (reader.Read())
                         {
-                            reader.MoveToAttribute(a);
-                            if (reader.Name.ToLower() == "name")
+                            if (reader.ReadToFollowing("graph"))
                             {
-                                newGraphitem.name = reader.Value;
+                                graphitem newGraphitem = new graphitem();
+
+                                for (int a = 0; a < reader.AttributeCount; a++)
+                                {
+                                    reader.MoveToAttribute(a);
+                                    if (reader.Name.ToLower() == "name")
+                                    {
+                                        newGraphitem.name = reader.Value + " " + Path.GetFileNameWithoutExtension(file);
+                                    }
+                                }
+
+                                reader.MoveToElement();
+
+                                XmlReader inner = reader.ReadSubtree();
+
+                                while (inner.Read())
+                                {
+                                    if (inner.IsStartElement())
+                                    {
+                                        if (inner.Name.ToLower() == "expression")
+                                            newGraphitem.expressions.Add(inner.ReadString().Trim());
+                                        else if (inner.Name.ToLower() == "description")
+                                            newGraphitem.description = inner.ReadString().Trim();
+                                    }
+                                }
+
+                                processGraphItem(newGraphitem);
+
+                                items.Add(newGraphitem);
                             }
                         }
-
-                        reader.MoveToElement();
-
-                        XmlReader inner = reader.ReadSubtree();
-
-                        while (inner.Read())
-                        {
-                            if (inner.IsStartElement())
-                            {
-                                if (inner.Name.ToLower() == "expression")
-                                    newGraphitem.expressions.Add(inner.ReadString().Trim());
-                                else if (inner.Name.ToLower() == "description")
-                                    newGraphitem.description = inner.ReadString().Trim();
-                            }
-                        }
-
-                        processGraphItem(newGraphitem);
-
-                        items.Add(newGraphitem);
                     }
+                }
+                catch (Exception ex)
+                {
+                    log.Error(ex);
                 }
             }
         }
@@ -507,6 +521,7 @@ namespace MissionPlanner.Log
             GC.Collect();
 
             ErrorCache = new List<TextObj>();
+            EVCache = new List<TextObj>();
             ModeCache = new List<TextObj>();
             ModePolyCache = new List<TextObj>();
             TimeCache = new List<TextObj>();
@@ -519,7 +534,7 @@ namespace MissionPlanner.Log
             {
                 using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
                 {
-                    openFileDialog1.Filter = "Log Files|*.log;*.bin";
+                    openFileDialog1.Filter = "Log Files|*.log;*.bin;*.BIN;*.LOG";
                     openFileDialog1.FilterIndex = 2;
                     openFileDialog1.Multiselect = true;
                     openFileDialog1.InitialDirectory = lastLogDir ?? Settings.Instance.LogDir;
@@ -656,6 +671,8 @@ namespace MissionPlanner.Log
 
             // update preselection graphs
             readmavgraphsxml();
+
+            graphs.Sort((a, b) => a.Name.CompareTo(b.Name));
 
             //CMB_preselect.DisplayMember = "Name";
             CMB_preselect.DataSource = null;
@@ -1401,6 +1418,85 @@ namespace MissionPlanner.Log
                 log.Info("End DrawErrors");
             });
         }
+
+        async Task DrawEV()
+        {
+            await Task.Run(() =>
+            {
+                log.Info("Start DrawEV");
+                bool top = false;
+                double a = 0;
+
+                if (EVCache.Count > 0)
+                {
+                    foreach (var item in EVCache)
+                    {
+                        item.Location.Y = zg1.GraphPane.YAxis.Scale.Max;
+                        zg1.GraphPane.GraphObjList.Add(item);
+                    }
+                    return;
+                }
+
+                EVCache.Clear();
+
+                double b = 0;
+
+                //ErrorCache.Add(new TextObj("", -500, 0));
+
+                if (!dflog.logformat.ContainsKey("EV"))
+                    return;
+
+                foreach (var item in logdata.GetEnumeratorType("EV"))
+                {
+                    b = item.lineno;
+
+                    if (item.msgtype == "EV")
+                    {
+                        if (!dflog.logformat.ContainsKey("EV"))
+                            return;
+
+                        int index = dflog.FindMessageOffset("EV", "Id");
+                        if (index == -1)
+                        {
+                            continue;
+                        }
+
+                        if (chk_time.Checked)
+                        {
+                            XDate date = new XDate(item.time);
+                            b = date.XLDate;
+                        }
+
+                        if (item.items.Length <= index)
+                            continue;
+
+                        string mode = "EV: " + ((DFLog.events) int.Parse(item.items[index].ToString()));
+                        if (top)
+                        {
+                            var temp = new TextObj(mode, b, zg1.GraphPane.YAxis.Scale.Max, CoordType.AxisXYScale,
+                                AlignH.Left, AlignV.Top);
+                            temp.FontSpec.Fill.Color = Color.Red;
+                            EVCache.Add(temp);
+                            this.BeginInvokeIfRequired(() => zg1.GraphPane.GraphObjList.Add(temp));
+                        }
+                        else
+                        {
+                            var temp = new TextObj(mode, b, zg1.GraphPane.YAxis.Scale.Max, CoordType.AxisXYScale,
+                                AlignH.Left, AlignV.Bottom);
+                            temp.FontSpec.Fill.Color = Color.Red;
+                            EVCache.Add(temp);
+                            this.BeginInvokeIfRequired(() => zg1.GraphPane.GraphObjList.Add(temp));
+                        }
+
+                        top = !top;
+                    }
+
+                    a++;
+                }
+                log.Info("End DrawEV");
+            });
+        }
+
 
         async Task DrawModes()
         {
@@ -2362,7 +2458,7 @@ namespace MissionPlanner.Log
             {
                 sender.GraphPane.GraphObjList.Clear();
 
-                Task a = null, b = null, c = null, d = null, e = null;
+                Task a = null, b = null, c = null, d = null, e = null, f = null;
 
                 if (chk_mode.Checked)
                     a=DrawModes();
@@ -2370,6 +2466,9 @@ namespace MissionPlanner.Log
                     b=DrawErrors();
                 if (!chk_time.Checked)
                     c=DrawTime();
+
+                if (chk_events.Checked)
+                    f = DrawEV();
 
                 if (chk_msg.Checked)
                     d=DrawMSG();
@@ -2410,6 +2509,8 @@ namespace MissionPlanner.Log
                     await d;
                 if (e != null)
                     await e;
+                if (f != null)
+                    await f;
 
                 sender.Invalidate();
             }
@@ -2583,7 +2684,7 @@ namespace MissionPlanner.Log
                 }
             }
 
-            this.Invalidate();
+            zg1_ZoomEvent(zg1, null, null);
         }
 
         private void treeView1_DrawNode(object sender, DrawTreeNodeEventArgs e)
@@ -2914,6 +3015,7 @@ namespace MissionPlanner.Log
         private void chk_time_CheckedChanged(object sender, EventArgs e)
         {
             ModeCache.Clear();
+            EVCache.Clear();
             ErrorCache.Clear();
             TimeCache.Clear();
             MSGCache.Clear();
@@ -3260,6 +3362,11 @@ CultureInfo.InvariantCulture));
 
                 yield return (avgx, avgy, avgz);
             }
+        }
+
+        private void chk_events_CheckedChanged(object sender, EventArgs e)
+        {
+            zg1_ZoomEvent(zg1, null, null);
         }
     }
 }

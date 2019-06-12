@@ -1,14 +1,12 @@
-﻿using System;
+﻿using log4net;
+using MissionPlanner.ArduPilot;
+using MissionPlanner.Utilities;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Serialization;
-using GMap.NET;
-using log4net;
-using MissionPlanner.ArduPilot;
-using MissionPlanner.Maps;
-using MissionPlanner.Utilities;
-using Newtonsoft.Json;
 
 namespace MissionPlanner
 {
@@ -32,6 +30,7 @@ namespace MissionPlanner
             signing = false;
             this.param = new MAVLinkParamList();
             this.packets = new Dictionary<uint, Queue<MAVLinkMessage>>();
+            this.packetsLast = new Dictionary<uint, MAVLinkMessage>();
             this.aptype = 0;
             this.apname = 0;
             this.recvpacketcount = 0;
@@ -43,11 +42,6 @@ namespace MissionPlanner
                 this.Proximity = new Proximity(this);
 
             camerapoints.Clear();
-
-            try
-            {
-                GMapMarkerOverlapCount = new GMapMarkerOverlapCount(PointLatLng.Empty);
-            } catch { }
 
             this.packetslost = 0f;
             this.packetsnotlost = 0f;
@@ -129,6 +123,10 @@ namespace MissionPlanner
         /// storage of a previous packet recevied of a specific type
         /// </summary>
         Dictionary<uint, Queue<MAVLinkMessage>> packets { get; set; }
+        /// <summary>
+        /// the last valid packet of this type.
+        /// </summary>
+        Dictionary<uint, MAVLinkMessage> packetsLast { get; set; }
 
         object packetslock = new object();
 
@@ -139,8 +137,23 @@ namespace MissionPlanner
             {
                 if (packets.ContainsKey(mavlinkid))
                 {
-                    if(packets[mavlinkid].Count > 0)
+                    if (packets[mavlinkid].Count > 0)
+                    {
                         return packets[mavlinkid].Dequeue();
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public MAVLinkMessage getPacketLast(uint mavlinkid)
+        {
+            lock (packetslock)
+            {
+                if (packetsLast.ContainsKey(mavlinkid))
+                {
+                    return packetsLast[mavlinkid];
                 }
             }
 
@@ -163,6 +176,7 @@ namespace MissionPlanner
                 }
 
                 packets[msg.msgid].Enqueue(msg);
+                packetsLast[msg.msgid] = msg;
             }
         }
 
@@ -230,8 +244,6 @@ namespace MissionPlanner
         public ConcurrentDictionary<int, mavlink_fence_point_t> fencepoints = new ConcurrentDictionary<int, mavlink_fence_point_t>();
 
         public List<mavlink_camera_feedback_t> camerapoints = new List<mavlink_camera_feedback_t>();
-
-        public GMapMarkerOverlapCount GMapMarkerOverlapCount;
 
         /// <summary>
         /// Store the guided mode wp location
