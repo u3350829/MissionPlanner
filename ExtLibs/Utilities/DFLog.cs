@@ -29,12 +29,34 @@ namespace MissionPlanner.Utilities
 
         public struct DFItem
         {
-            public string msgtype;
+            public string msgtype
+            {
+                get
+                {
+                    if(raw.Length>0)
+                        return raw[0].ToString();
+                    return "";
+                }
+            }
             public DateTime time;
-            public string[] items;
+
+            public string[] items
+            {
+                get
+                {
+                    return raw.Select((a) =>
+                    {
+                        if (a.IsNumber())
+                            return (((IConvertible) a).ToString(CultureInfo.InvariantCulture));
+                        else
+                            return a.ToString();
+                    }).ToArray();
+                }
+            }
+
             public int timems;
             public int lineno;
-
+            public object[] raw;
             public DFLog parent;
 
             public DFItem(DFLog _parent, object[] _answer, int lineno) : this()
@@ -43,16 +65,10 @@ namespace MissionPlanner.Utilities
 
                 this.lineno = lineno;
 
+                this.raw = _answer;
+
                 if (_answer.Length > 0)
                 {
-                    msgtype = _answer[0].ToString();
-                    items = _answer.Select((a) =>
-                    {
-                        if (a.IsNumber())
-                            return (((IConvertible) a).ToString(CultureInfo.InvariantCulture));
-                        else
-                            return a.ToString();
-                    }).ToArray();
                     bool timeus = false;
 
                     if (_parent.logformat.ContainsKey(msgtype))
@@ -102,8 +118,6 @@ namespace MissionPlanner.Utilities
                                     }
                                 }
                             }
-
-
                         }
 
                         if (indextimems == -1)
@@ -151,6 +165,31 @@ namespace MissionPlanner.Utilities
                         return null;
                     return items[index];
                 }
+            }
+
+            public Dictionary<string, object> ToDictionary()
+            {
+                var ans = new Dictionary<string, object>();
+
+                int a = 1;
+                foreach (var fieldName in parent.logformat[msgtype].FieldNames)
+                {
+                    if (a.IsNumber())
+                        ans[fieldName] = (IConvertible) raw[a];
+                    else
+                        ans[fieldName] = items[a];
+                    a++;
+                }
+
+                return ans;
+            }
+
+            public object GetRaw(string item)
+            {
+                var index = parent.FindMessageOffset(msgtype, item);
+                if (index == -1)
+                    return null;
+                return raw[index];
             }
         }
 
@@ -472,8 +511,7 @@ namespace MissionPlanner.Utilities
 
                 if (items.Length > 0)
                 {
-                    item.msgtype = items[0];
-                    item.items = items;
+                    item.raw = items;
                     bool timeus = false;
 
                     if (logformat.ContainsKey(item.msgtype))

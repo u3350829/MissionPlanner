@@ -341,6 +341,9 @@
     <Compile Include="ConnectionOptions.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Controls\UAVCANInspector.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Controls\PropagationSettings.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -496,6 +499,9 @@
     <Compile Include="Log\LogStrings.Designer.cs">
       <DependentUpon>LogStrings.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Controls\UAVCANInspector.resx">
+      <DependentUpon>UAVCANInspector.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\PropagationSettings.resx">
       <DependentUpon>PropagationSettings.cs</DependentUpon>
     </EmbeddedResource>
@@ -4222,6 +4228,9 @@
     <Content Include="Drivers\dpinst.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Drivers\nxp.inf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="FirmwareHistory.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -4244,6 +4253,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="mavcmd.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="mavextra.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="mpdesktop.ico">
@@ -4414,6 +4426,9 @@
     <Content Include="Drivers\vrugimbal.inf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Drivers\nxp.cat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="libSkiaSharp.so">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
