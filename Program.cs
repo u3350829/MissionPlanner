@@ -1,19 +1,20 @@
-﻿using System;
-using System.Windows.Forms;
-using System.Net;
-using System.IO;
-using System.Text;
-using System.Threading;
+﻿using GMap.NET.MapProviders;
 using log4net;
 using log4net.Config;
-using System.Diagnostics;
-using System.Drawing;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using GMap.NET.MapProviders;
 using MissionPlanner.Comms;
 using MissionPlanner.Controls;
 using MissionPlanner.Utilities;
+using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Management;
+using System.Net;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace MissionPlanner
 {
@@ -25,7 +26,10 @@ namespace MissionPlanner
 
         public static string name { get; internal set; }
 
-        public static bool WindowsStoreApp { get { return Application.ExecutablePath.Contains("WindowsApps"); } }
+        public static bool WindowsStoreApp
+        {
+            get { return Application.ExecutablePath.Contains("WindowsApps"); }
+        }
 
         public static Image Logo = null;
         public static Image Logo2 = null;
@@ -35,10 +39,10 @@ namespace MissionPlanner
 
         internal static Thread Thread;
 
-        public static string[] args = new string[] {};
+        public static string[] args = new string[] { };
         public static Bitmap SplashBG = null;
 
-        public static string[] names = new string[] { "VVVVZ" };
+        public static string[] names = new string[] {"VVVVZ"};
         public static bool MONO = false;
 
         static Program()
@@ -188,6 +192,8 @@ namespace MissionPlanner
             MissionPlanner.Comms.CommsBase.Settings += CommsBase_Settings;
             MissionPlanner.Comms.CommsBase.InputBoxShow += CommsBaseOnInputBoxShow;
             MissionPlanner.Comms.CommsBase.ApplyTheme += MissionPlanner.Utilities.ThemeManager.ApplyThemeTo;
+            MissionPlanner.Comms.SerialPort.GetDeviceName += SerialPort_GetDeviceName;
+                
 
             // set the cache provider to my custom version
             GMap.NET.GMaps.Instance.PrimaryCache = new Maps.MyImageCache();
@@ -307,12 +313,30 @@ namespace MissionPlanner
             try
             {
                 // kill sim background process if its still running
-                if (Controls.SITL.simulator != null)
-                    Controls.SITL.simulator.Kill();
+                if (GCSViews.SITL.simulator != null)
+                    GCSViews.SITL.simulator.Kill();
             }
             catch
             {
             }
+        }
+
+        private static string SerialPort_GetDeviceName(string port)
+        {
+            ObjectQuery query = new ObjectQuery("SELECT * FROM Win32_SerialPort");                // Win32_USBControllerDevice
+            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(query))
+            {
+                foreach (ManagementObject obj2 in searcher.Get())
+                {
+                    //DeviceID
+                    if (obj2.Properties["DeviceID"].Value.ToString().ToUpper() == port.ToUpper())
+                    {
+                        return obj2.Properties["Name"].Value.ToString();
+                    }
+                }
+            }
+
+            return "";
         }
 
         private static void LoadDlls()

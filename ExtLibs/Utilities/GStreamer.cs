@@ -83,7 +83,7 @@ namespace MissionPlanner.Utilities
             public static extern IntPtr gst_message_get_stream_status_object(IntPtr raw);
 
             [DllImport("libgstreamer-1.0-0.dll", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void gst_element_set_state(IntPtr pipeline, GstState gST_STATE_PLAYING);
+            public static extern GstStateChangeReturn gst_element_set_state(IntPtr pipeline, GstState gST_STATE_PLAYING);
 
             [DllImport("libgstreamer-1.0-0.dll", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr gst_parse_launch(string cmdline, out IntPtr error);
@@ -284,6 +284,14 @@ namespace MissionPlanner.Utilities
             GST_STATE_PLAYING = 4
         }
 
+        public enum GstStateChangeReturn
+        {
+            GST_STATE_CHANGE_FAILURE = 0,
+            GST_STATE_CHANGE_SUCCESS = 1,
+            GST_STATE_CHANGE_ASYNC = 2,
+            GST_STATE_CHANGE_NO_PREROLL = 3
+        }
+
         public enum GstMessageType
         {
             GST_MESSAGE_UNKNOWN = 0,
@@ -344,7 +352,15 @@ namespace MissionPlanner.Utilities
             int argc = 1;
             string[] argv = new string[] {"-vvv"};
 
-            NativeMethods.gst_init(ref argc, argv);
+            try
+            {
+                NativeMethods.gst_init(ref argc, argv);
+            }
+            catch (BadImageFormatException)
+            {
+                CustomMessageBox.Show("The incorrect exe architecture has been detected at " + gstlaunch + "\nPlease install gstreamer for the correct architecture");
+                return null;
+            }
 
             uint v1 = 0, v2 = 0, v3 = 0, v4 = 0;
             NativeMethods.gst_version(ref v1, ref v2, ref v3, ref v4);
@@ -386,8 +402,11 @@ namespace MissionPlanner.Utilities
             //var appsink = NativeMethods.gst_element_factory_make("appsink", null);
 
             int testdata = 0;
+            bool newdata = false;
             GstAppSinkCallbacks callbacks = new GstAppSinkCallbacks();
-            callbacks.new_buffer += (sink, data) => { return GstFlowReturn.GST_FLOW_OK; };
+            callbacks.new_buffer += (sink, data) =>
+            {
+                newdata = true; return GstFlowReturn.GST_FLOW_OK; };
             //callbacks.new_preroll += (sink, data) => { return GstFlowReturn.GST_FLOW_OK; };
             callbacks.eos += (sink, data) => { };
 
@@ -396,13 +415,15 @@ namespace MissionPlanner.Utilities
             NativeMethods.gst_app_sink_set_callbacks(appsink, callbacks, ref testdata, null);
 
             /* Start playing */
-            NativeMethods.gst_element_set_state(pipeline, GstState.GST_STATE_PLAYING);
+            var running = NativeMethods.gst_element_set_state(pipeline, GstState.GST_STATE_PLAYING) != GstStateChangeReturn.GST_STATE_CHANGE_FAILURE;
 
             /* Wait until error or EOS */
             var bus = NativeMethods.gst_element_get_bus(pipeline);
 
             NativeMethods.gst_debug_bin_to_dot_file(pipeline, GstDebugGraphDetails.GST_DEBUG_GRAPH_SHOW_ALL,
                 "pipeline");
+
+            log.Info("graphviz of pipeline is at " + Path.GetTempPath() + "pipeline.dot");
 
             //var msg = GStreamer.gst_bus_timed_pop_filtered(bus, GStreamer.GST_CLOCK_TIME_NONE, GStreamer.GstMessageType.GST_MESSAGE_ERROR | GStreamer.GstMessageType.GST_MESSAGE_EOS);
 
@@ -412,6 +433,11 @@ namespace MissionPlanner.Utilities
 
             var th = new Thread(delegate()
             {
+                // prevent it falling out of scope
+                GstAppSinkCallbacks callbacks2 = callbacks;
+
+                Thread.Sleep(500);
+
                 while (!NativeMethods.gst_app_sink_is_eos(appsink))
                 {
                     try
@@ -448,7 +474,7 @@ namespace MissionPlanner.Utilities
                         }
                         else
                         {
-                            log.Info("failed gst_app_sink_try_pull_sample");
+                            log.Info("failed gst_app_sink_try_pull_sample "+ trys + "/60");
                             trys++;
                             if (trys > 60)
                                 break;
@@ -491,7 +517,22 @@ namespace MissionPlanner.Utilities
             OutputPort = 1235;
 
             var dataDirectory = Settings.GetDataDirectory();
-            var gstdir = Path.Combine(dataDirectory, @"gstreamer\1.0\x86_64");
+            var gstdir = Path.Combine(dataDirectory, @"gstreamer\1.0\x86_64\bin\libgstreamer-1.0-0.dll");
+
+       
+            SetGSTPath(gstdir);
+        }
+
+        private static void SetGSTPath(string gstdir)
+        {
+            //
+     //C:\gstreamer\1.0\x86_64\bin\gst-launch-1.0.exe
+
+            if (!File.Exists(gstdir))
+                return;
+
+            gstdir = Path.GetDirectoryName(gstdir);
+            gstdir = Path.GetDirectoryName(gstdir);
 
             // Prepend native path to environment path, to ensure the
             // right libs are being used.
@@ -508,8 +549,9 @@ namespace MissionPlanner.Utilities
             Environment.SetEnvironmentVariable("GST_DEBUG_DUMP_DOT_DIR", Path.GetTempPath());
         }
 
-        //gst-launch-1.0.exe  videotestsrc pattern=ball ! video/x-raw,width=640,height=480 ! clockoverlay ! x264enc ! rtph264pay ! udpsink host=127.0.0.1 port=5600
+        //gst-launch-1.0.exe  videotestsrc pattern=ball  is-live=true ! video/x-raw,width=640,height=480 ! clockoverlay ! x264enc ! rtph264pay ! udpsink host=127.0.0.1 port=5600
         //gst-launch-1.0.exe -v udpsrc port=5600 buffer-size=60000 ! application/x-rtp ! rtph264depay ! avdec_h264 ! queue leaky=2 ! avenc_mjpeg ! tcpserversink host=127.0.0.1 port=1235 sync=false
+        //udpsrc port=5600 buffer-size=60000 ! application/x-rtp ! rtph264depay ! avdec_h264 ! queue leaky=2 ! video/x-raw,format=BGRx ! appsink name=outsink
 
         //gst-launch-1.0.exe -v videotestsrc !  video/x-raw,format=BGRA,framerate=25/1 ! videoconvert ! autovideosink
 
@@ -535,9 +577,7 @@ namespace MissionPlanner.Utilities
             dirs.Add(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
             dirs.Add(Settings.GetDataDirectory());
-
-            // packaged version only
-            /*
+            
             DriveInfo[] allDrives = DriveInfo.GetDrives();
             foreach (DriveInfo d in allDrives)
             {
@@ -548,16 +588,17 @@ namespace MissionPlanner.Utilities
                     dirs.Add(d.RootDirectory.Name + "Program Files (x86)" + Path.DirectorySeparatorChar + "gstreamer");
                 }
             }
-            */
+            
             foreach (var dir in dirs)
             {
                 if (Directory.Exists(dir))
                 {
-                    var ans = Directory.GetFiles(dir, "gst-launch-1.0.exe", SearchOption.AllDirectories);
+                    var ans = Directory.GetFiles(dir, "libgstreamer-1.0-0.dll", SearchOption.AllDirectories);
 
                     if (ans.Length > 0)
                     {
                         log.Info("Found gstreamer " + ans.First());
+                        SetGSTPath(ans.First());
                         return ans.First();
                     }
                 }

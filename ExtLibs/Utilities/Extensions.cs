@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,6 +22,11 @@ namespace MissionPlanner.Utilities
                 Error =
                     (sender, args) => { args.ErrorContext.Handled = true; }
             });
+        }
+
+        public static T FromJSON<T>(this string msg)
+        {
+            return JsonConvert.DeserializeObject<T>(msg);
         }
 
         public static string RemoveFromEnd(this string s, string suffix)
@@ -52,9 +58,100 @@ namespace MissionPlanner.Utilities
             return buffer;
         }
 
+        public static MemoryStream ToMemoryStream(this byte[] buffer)
+        {
+            return new MemoryStream(buffer);
+        }
+
         public static string TrimUnPrintable(this string input)
         {
             return Regex.Replace(input, @"[^\u0020-\u007E]", String.Empty);
+        }
+
+        public static double ConvertToDouble(this object input)
+        {
+            if (input.GetType() == typeof(float))
+            {
+                return (float)input;
+            }
+            if (input.GetType() == typeof(double))
+            {
+                return (double)input;
+            }
+            if (input.GetType() == typeof(ulong))
+            {
+                return (ulong)input;
+            }
+            if (input.GetType() == typeof(long))
+            {
+                return (long)input;
+            }
+            if (input.GetType() == typeof(int))
+            {
+                return (int)input;
+            }
+            if (input.GetType() == typeof(uint))
+            {
+                return (uint)input;
+            }
+            if (input.GetType() == typeof(short))
+            {
+                return (short)input;
+            }
+            if (input.GetType() == typeof(ushort))
+            {
+                return (ushort)input;
+            }
+            if (input.GetType() == typeof(byte))
+            {
+                return (byte)input;
+            }
+            if (input.GetType() == typeof(sbyte))
+            {
+                return (sbyte)input;
+            }
+            if (input.GetType() == typeof(bool))
+            {
+                return (bool)input ? 1 : 0;
+            }
+            if (input.GetType() == typeof(string))
+            {
+                double ans = 0;
+                if (double.TryParse((string)input, out ans))
+                {
+                    return ans;
+                }
+            }
+            if (input is Enum)
+            {
+                return Convert.ToInt32(input);
+            }
+
+            if (input == null)
+                throw new Exception("Bad Type Null");
+            else
+                throw new Exception("Bad Type " + input.GetType().ToString());
+        }
+
+        public static void CallWithTimeout(this Action action, int timeoutMilliseconds)
+        {
+            Thread threadToKill = null;
+            Action wrappedAction = () =>
+            {
+                threadToKill = Thread.CurrentThread;
+                action();
+            };
+
+            var result = wrappedAction.BeginInvoke(null, null);
+            if (result.AsyncWaitHandle.WaitOne(timeoutMilliseconds))
+            {
+                wrappedAction.EndInvoke(result);
+            }
+            else
+            {
+                threadToKill.Abort();
+                throw new TimeoutException();
+            }
         }
 
         public static async void Async(this Action function)
@@ -286,6 +383,9 @@ namespace MissionPlanner.Utilities
 
         public static double EvaluateMath(this String input)
         {
+            if (input == null || input == "")
+                return 0;
+
             String expr = "(" + input + ")";
             Stack<String> ops = new Stack<String>();
             Stack<Double> vals = new Stack<Double>();

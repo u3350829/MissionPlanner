@@ -1,6 +1,7 @@
 ﻿using log4net;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 
 namespace MissionPlanner.ArduPilot
@@ -190,6 +191,10 @@ union px4_custom_mode {
                 input = input.Replace("{wpn}", MAV.cs.wpno.ToString());
             }
 
+            input = input.Replace("{sysid}", MAV.sysid.ToString("0"));
+
+            input = input.Replace("{compid}", MAV.compid.ToString("0"));
+
             input = input.Replace("{asp}", MAV.cs.airspeed.ToString("0"));
 
             input = input.Replace("{alt}", MAV.cs.alt.ToString("0"));
@@ -200,13 +205,13 @@ union px4_custom_mode {
 
             input = input.Replace("{mode}", MAV.cs.mode.ToString());
 
-            input = input.Replace("{batv}", MAV.cs.battery_voltage.ToString("0.00"));
+            input = input.Replace("{batv}", MAV.cs.battery_voltage.ToString("0.00", CultureInfo.InstalledUICulture));
 
             input = input.Replace("{batp}", (MAV.cs.battery_remaining).ToString("0"));
 
-            input = input.Replace("{vsp}", (MAV.cs.verticalspeed).ToString("0.0"));
+            input = input.Replace("{vsp}", (MAV.cs.verticalspeed).ToString("0.0", CultureInfo.InstalledUICulture));
 
-            input = input.Replace("{curr}", (MAV.cs.current).ToString("0.0"));
+            input = input.Replace("{curr}", (MAV.cs.current).ToString("0.0", CultureInfo.InstalledUICulture));
 
             input = input.Replace("{hdop}", (MAV.cs.gpshdop).ToString("0.00"));
 

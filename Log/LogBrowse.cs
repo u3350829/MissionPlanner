@@ -2484,11 +2484,16 @@ namespace MissionPlanner.Log
 
             opt.Combobox.DataSource = options;
             opt.Button1.Text = "Filter";
+            opt.Button1.DialogResult = DialogResult.OK;
             opt.Button2.Text = "Cancel";
+            opt.Button2.DialogResult = DialogResult.Cancel;
 
-            opt.ShowDialog(this);
+            var dr = opt.ShowDialog(this);
 
-            if (opt.SelectedItem != "")
+            if (dr != DialogResult.OK)
+                return;
+
+            if (opt.Text != "")
             {
                 logdatafilter.Clear();
 
@@ -2500,7 +2505,7 @@ namespace MissionPlanner.Log
                     b++;
                     var item = dflog.GetDFItemFromLine(item2, b);
 
-                    if (item.msgtype == opt.SelectedItem)
+                    if (item.msgtype.ToUpper() == opt.Text.ToUpper())
                     {
                         logdatafilter.Add(a, item);
                         a++;
@@ -2522,27 +2527,6 @@ namespace MissionPlanner.Log
                     dataGridView1.RowCount = logdata.Count;
                 }
             }
-
-            /*
-            dataGridView1.SuspendLayout();
-            
-            foreach (DataGridViewRow datarow in dataGridView1.Rows)
-            {
-                string celldata = datarow.Cells[0].Value.ToString().Trim();
-                if (celldata == opt.SelectedItem || opt.SelectedItem == "")
-                    datarow.Visible = true;
-                else
-                {
-                    try
-                    {
-                        datarow.Visible = false;
-                    }
-                    catch { }
-                }
-            }
-
-            dataGridView1.ResumeLayout();
-             * */
             dataGridView1.Invalidate();
         }
 

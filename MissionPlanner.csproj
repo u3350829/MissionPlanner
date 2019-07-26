@@ -96,9 +96,6 @@
       <HintPath>.\extlibs\BitMiracle.LibTiff.NetStandard.dll</HintPath>
       <Private>true</Private>
     </Reference>
-    <Reference Include="Ionic.Zip.NetStandard">
-      <HintPath>ExtLibs\Ionic.Zip.NetStandard.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -289,6 +286,9 @@
     </PackageReference>
     <PackageReference Include="CSMatIO" version="1.0.20" targetFramework="netstandard2.0" requireReinstallation="true" />
     <PackageReference Include="DirectShowLib" Version="1.0.0" />
+    <PackageReference Include="DotNetZip.NetStandard">
+      <Version>1.12.0</Version>
+    </PackageReference>
     <PackageReference Include="DotSpatial.Data" version="1.9" targetFramework="net462" />
     <PackageReference Include="DotSpatial.Data.Forms" version="1.9" targetFramework="net462" />
     <PackageReference Include="DotSpatial.Extensions" version="1.9" targetFramework="net462" />
@@ -303,7 +303,7 @@
     <PackageReference Include="DotSpatial.Topology" version="1.9" targetFramework="net462" />
     <PackageReference Include="Flurl" version="2.8.0" targetFramework="net462" />
     <PackageReference Include="Flurl.Http" version="2.3.2" targetFramework="net462" />
-    <PackageReference Include="GDAL" Version="1.11.1" />
+    <PackageReference Include="GDAL" Version="2.4.2" />
     <PackageReference Include="GeoJSON.Net" version="1.1.64" targetFramework="net462" />
     <PackageReference Include="IronPython" version="2.7.8.1" targetFramework="net462" />
     <PackageReference Include="IronPython.StdLib" version="2.7.8.1" targetFramework="net462" />
@@ -313,7 +313,7 @@
     <PackageReference Include="NETStandard.Library">
       <Version>2.0.3</Version>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" version="11.0.2" targetFramework="net462" />
+    <PackageReference Include="Newtonsoft.Json" version="12.0.2" targetFramework="net462" />
     <PackageReference Include="SharpDX" version="4.1.0" targetFramework="net462" />
     <PackageReference Include="SharpDX.DirectInput" version="4.1.0" targetFramework="net462" />
     <PackageReference Include="SkiaSharp" Version="1.68.0" />
@@ -338,8 +338,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common.cs" />
-    <Compile Include="ConnectionOptions.cs">
+    <Compile Include="Controls\ConnectionOptions.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\DigitalSkyUI.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\DigitalSkyUI.Designer.cs">
+      <DependentUpon>DigitalSkyUI.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\RelayOptions.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\RelayOptions.Designer.cs">
+      <DependentUpon>RelayOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\MavFTPUI.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\MavFTPUI.Designer.cs">
+      <DependentUpon>MavFTPUI.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\UAVCANInspector.cs">
       <SubType>Form</SubType>
@@ -351,11 +369,17 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Controls\SB.cs" />
-    <Compile Include="ElevationProfile.cs">
+    <Compile Include="Controls\ElevationProfile.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FollowMe.cs">
+    <Compile Include="Controls\FollowMe.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GCSViews\ConfigurationView\ConfigFirmwareManifest.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GCSViews\ConfigurationView\ConfigFirmwareManifest.Designer.cs">
+      <DependentUpon>ConfigFirmwareManifest.cs</DependentUpon>
     </Compile>
     <Compile Include="GCSViews\ConfigurationView\ConfigHWIDs.cs">
       <SubType>UserControl</SubType>
@@ -381,6 +405,12 @@
     <Compile Include="GCSViews\ConfigurationView\ConfigUAVCAN.Designer.cs">
       <DependentUpon>ConfigUAVCAN.cs</DependentUpon>
     </Compile>
+    <Compile Include="GCSViews\ConfigurationView\ConfigUserDefined.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GCSViews\ConfigurationView\ConfigUserDefined.Designer.cs">
+      <DependentUpon>ConfigUserDefined.cs</DependentUpon>
+    </Compile>
     <Compile Include="Joystick\JoystickAxis.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -394,7 +424,7 @@
     <Compile Include="Utilities\Speech.cs" />
     <Compile Include="Utilities\SSHTerminal.cs" />
     <Compile Include="Utilities\XTermRBGColors.cs" />
-    <Compile Include="GenOTP.cs">
+    <Compile Include="Controls\GenOTP.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Grid\camerainfo.cs" />
@@ -403,23 +433,22 @@
     <Compile Include="Joystick\MyJoystickState.cs" />
     <Compile Include="L10N.cs" />
     <Compile Include="MagCalib.cs" />
-    <Compile Include="Magfitrotation.cs" />
     <Compile Include="MainV2.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MovingBase.cs">
+    <Compile Include="Controls\MovingBase.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="OpenGLtest.cs">
+    <Compile Include="Controls\OpenGLtest.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="OpenGLtest2.cs">
+    <Compile Include="Controls\OpenGLtest2.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="OSDVideo.cs">
+    <Compile Include="Controls\OSDVideo.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="paramcompare.cs">
+    <Compile Include="Controls\paramcompare.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Program.cs" />
@@ -428,26 +457,26 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="RAW_Sensor.cs">
+    <Compile Include="Controls\RAW_Sensor.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ResEdit.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Script.cs" />
-    <Compile Include="ScriptConsole.cs">
+    <Compile Include="Controls\ScriptConsole.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SerialInjectGPS.cs">
+    <Compile Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="SerialOutputMD.cs">
+    <Compile Include="Controls\SerialOutputMD.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SerialOutputNMEA.cs">
+    <Compile Include="Controls\SerialOutputNMEA.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SerialOutputPass.cs">
+    <Compile Include="Controls\SerialOutputPass.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Splash.cs">
@@ -499,6 +528,42 @@
     <Compile Include="Log\LogStrings.Designer.cs">
       <DependentUpon>LogStrings.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Controls\DigitalSkyUI.resx">
+      <DependentUpon>DigitalSkyUI.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RelayOptions.ar.resx">
+      <DependentUpon>RelayOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RelayOptions.az-Latn-AZ.resx">
+      <DependentUpon>RelayOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RelayOptions.id-ID.resx">
+      <DependentUpon>RelayOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RelayOptions.ja-JP.resx">
+      <DependentUpon>RelayOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RelayOptions.ko-KR.resx">
+      <DependentUpon>RelayOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RelayOptions.pt.resx">
+      <DependentUpon>RelayOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RelayOptions.resx">
+      <DependentUpon>RelayOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RelayOptions.ru-KZ.resx">
+      <DependentUpon>RelayOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RelayOptions.tr.resx">
+      <DependentUpon>RelayOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RelayOptions.zh-Hans.resx">
+      <DependentUpon>RelayOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\MavFTPUI.resx">
+      <DependentUpon>MavFTPUI.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\UAVCANInspector.resx">
       <DependentUpon>UAVCANInspector.cs</DependentUpon>
     </EmbeddedResource>
@@ -507,6 +572,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\ProximityControl.resx">
       <DependentUpon>ProximityControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigFirmwareManifest.resx">
+      <DependentUpon>ConfigFirmwareManifest.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigHWIDs.resx">
       <DependentUpon>ConfigHWIDs.cs</DependentUpon>
@@ -562,6 +630,9 @@
     <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigUAVCAN.resx">
       <DependentUpon>ConfigUAVCAN.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigUserDefined.resx">
+      <DependentUpon>ConfigUserDefined.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Joystick\JoystickAxis.resx" />
     <EmbeddedResource Include="Log\LogStrings.resx">
       <DependentUpon>LogStrings.cs</DependentUpon>
@@ -591,7 +662,7 @@
     <Compile Include="Controls\ServoOptions.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Controls\SITL.cs">
+    <Compile Include="GCSViews\SITL.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Controls\ThemeColors.cs">
@@ -697,9 +768,6 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GCSViews\ConfigurationView\ConfigFriendlyParamsAdv.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="GCSViews\ConfigurationView\ConfigGPSInject.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GCSViews\ConfigurationView\ConfigHWAirspeed.cs">
@@ -821,9 +889,6 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Log\Scan.cs" />
-    <Compile Include="Log\test\MotorFailure.cs" />
-    <Compile Include="Models\DelegateCommand.cs" />
-    <Compile Include="Models\ICommand.cs" />
     <Compile Include="NoFly\NoFly.cs" />
     <Compile Include="Plugin\Plugin.cs" />
     <Compile Include="Plugin\PluginLoader.cs" />
@@ -869,15 +934,10 @@
     <Compile Include="Swarm\WaypointLeader\WPControl.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Utilities\AP_GPS_base.cs" />
-    <Compile Include="Utilities\AP_GPS_GSOF.cs" />
-    <Compile Include="Utilities\AP_GPS_NOVA.cs" />
-    <Compile Include="Utilities\AP_GPS_SBF.cs" />
-    <Compile Include="Utilities\AP_Terrain.cs" />
     <Compile Include="Utilities\BoardDetect.cs" />
     <Compile Include="Utilities\CircleSurveyMission.cs" />
     <Compile Include="Utilities\ExtensionsMP.cs" />
-    <Compile Include="Utilities\fftui.cs">
+    <Compile Include="Controls\fftui.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Utilities\Firmware.cs" />
@@ -885,8 +945,6 @@
     <Compile Include="Utilities\httpserver.cs" />
     <Compile Include="Utilities\LangUtility.cs" />
     <Compile Include="Utilities\LogAnalyzer.cs" />
-    <Compile Include="Utilities\MeasureString.cs" />
-    <Compile Include="Utilities\NGEN.cs" />
     <Compile Include="Utilities\OpticalFlow.cs" />
     <Compile Include="Utilities\ParamFile.cs" />
     <Compile Include="Utilities\Password.cs" />
@@ -895,8 +953,7 @@
     <Compile Include="Utilities\StringRedirectWriter.cs" />
     <Compile Include="Utilities\ThemeManager.cs" />
     <Compile Include="Utilities\Tracking.cs" />
-    <Compile Include="Utilities\UDPMavlinkShim.cs" />
-    <Compile Include="Utilities\UDPVideoShim.cs" />
+    <Compile Include="Utilities\GStreamerUI.cs" />
     <Compile Include="Utilities\Update.cs" />
     <Compile Include="Utilities\Win32DeviceMgnt.cs" />
     <Compile Include="Utilities\AltitudeAngel\AASettings.cs">
@@ -916,49 +973,49 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConnectionOptions.Designer.cs">
+    <Compile Include="Controls\ConnectionOptions.Designer.cs">
       <DependentUpon>ConnectionOptions.cs</DependentUpon>
     </Compile>
-    <Compile Include="ElevationProfile.Designer.cs">
+    <Compile Include="Controls\ElevationProfile.Designer.cs">
       <DependentUpon>ElevationProfile.cs</DependentUpon>
     </Compile>
-    <Compile Include="FollowMe.Designer.cs">
+    <Compile Include="Controls\FollowMe.Designer.cs">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </Compile>
-    <Compile Include="GenOTP.Designer.cs">
+    <Compile Include="Controls\GenOTP.Designer.cs">
       <DependentUpon>GenOTP.cs</DependentUpon>
     </Compile>
     <Compile Include="MainV2.Designer.cs">
       <DependentUpon>MainV2.cs</DependentUpon>
     </Compile>
-    <Compile Include="MovingBase.Designer.cs">
+    <Compile Include="Controls\MovingBase.Designer.cs">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </Compile>
-    <Compile Include="OSDVideo.Designer.cs">
+    <Compile Include="Controls\OSDVideo.Designer.cs">
       <DependentUpon>OSDVideo.cs</DependentUpon>
     </Compile>
-    <Compile Include="paramcompare.Designer.cs">
+    <Compile Include="Controls\paramcompare.Designer.cs">
       <DependentUpon>paramcompare.cs</DependentUpon>
     </Compile>
-    <Compile Include="RAW_Sensor.Designer.cs">
+    <Compile Include="Controls\RAW_Sensor.Designer.cs">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </Compile>
     <Compile Include="ResEdit.Designer.cs">
       <DependentUpon>ResEdit.cs</DependentUpon>
     </Compile>
-    <Compile Include="ScriptConsole.Designer.cs">
+    <Compile Include="Controls\ScriptConsole.Designer.cs">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </Compile>
-    <Compile Include="SerialInjectGPS.Designer.cs">
+    <Compile Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.Designer.cs">
       <DependentUpon>SerialInjectGPS.cs</DependentUpon>
     </Compile>
-    <Compile Include="SerialOutputMD.Designer.cs">
+    <Compile Include="Controls\SerialOutputMD.Designer.cs">
       <DependentUpon>SerialOutputMD.cs</DependentUpon>
     </Compile>
-    <Compile Include="SerialOutputNMEA.Designer.cs">
+    <Compile Include="Controls\SerialOutputNMEA.Designer.cs">
       <DependentUpon>SerialOutputNMEA.cs</DependentUpon>
     </Compile>
-    <Compile Include="SerialOutputPass.Designer.cs">
+    <Compile Include="Controls\SerialOutputPass.Designer.cs">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </Compile>
     <Compile Include="Splash.Designer.cs">
@@ -1003,7 +1060,7 @@
     <Compile Include="Controls\ServoOptions.Designer.cs">
       <DependentUpon>ServoOptions.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\SITL.Designer.cs">
+    <Compile Include="GCSViews\SITL.Designer.cs">
       <DependentUpon>SITL.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\ThemeColors.Designer.cs">
@@ -1095,9 +1152,6 @@
     </Compile>
     <Compile Include="GCSViews\ConfigurationView\ConfigFriendlyParams.Designer.cs">
       <DependentUpon>ConfigFriendlyParams.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GCSViews\ConfigurationView\ConfigGPSInject.Designer.cs">
-      <DependentUpon>ConfigGPSInject.cs</DependentUpon>
     </Compile>
     <Compile Include="GCSViews\ConfigurationView\ConfigHWAirspeed.Designer.cs">
       <DependentUpon>ConfigHWAirspeed.cs</DependentUpon>
@@ -1240,7 +1294,7 @@
     <Compile Include="Swarm\WaypointLeader\WPControl.Designer.cs">
       <DependentUpon>WPControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Utilities\fftui.Designer.cs">
+    <Compile Include="Controls\fftui.Designer.cs">
       <DependentUpon>fftui.cs</DependentUpon>
     </Compile>
     <Compile Include="Utilities\AltitudeAngel\AASettings.Designer.cs">
@@ -1251,85 +1305,85 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ConnectionOptions.resx">
+    <EmbeddedResource Include="Controls\ConnectionOptions.resx">
       <DependentUpon>ConnectionOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ConnectionOptions.ar.resx">
+    <EmbeddedResource Include="Controls\ConnectionOptions.ar.resx">
       <DependentUpon>ConnectionOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ConnectionOptions.az-Latn-AZ.resx">
+    <EmbeddedResource Include="Controls\ConnectionOptions.az-Latn-AZ.resx">
       <DependentUpon>ConnectionOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ConnectionOptions.id-ID.resx">
+    <EmbeddedResource Include="Controls\ConnectionOptions.id-ID.resx">
       <DependentUpon>ConnectionOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ConnectionOptions.ko-KR.resx">
+    <EmbeddedResource Include="Controls\ConnectionOptions.ko-KR.resx">
       <DependentUpon>ConnectionOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ConnectionOptions.pt.resx">
+    <EmbeddedResource Include="Controls\ConnectionOptions.pt.resx">
       <DependentUpon>ConnectionOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ConnectionOptions.ru-KZ.resx">
+    <EmbeddedResource Include="Controls\ConnectionOptions.ru-KZ.resx">
       <DependentUpon>ConnectionOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ConnectionOptions.tr.resx">
+    <EmbeddedResource Include="Controls\ConnectionOptions.tr.resx">
       <DependentUpon>ConnectionOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ConnectionOptions.zh-Hans.resx">
+    <EmbeddedResource Include="Controls\ConnectionOptions.zh-Hans.resx">
       <DependentUpon>ConnectionOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ElevationProfile.resx">
+    <EmbeddedResource Include="Controls\ElevationProfile.resx">
       <DependentUpon>ElevationProfile.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.resx">
+    <EmbeddedResource Include="Controls\FollowMe.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.ar.resx">
+    <EmbeddedResource Include="Controls\FollowMe.ar.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.az-Latn-AZ.resx">
+    <EmbeddedResource Include="Controls\FollowMe.az-Latn-AZ.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.de-DE.resx">
+    <EmbeddedResource Include="Controls\FollowMe.de-DE.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.es-ES.resx">
+    <EmbeddedResource Include="Controls\FollowMe.es-ES.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.fr.resx">
+    <EmbeddedResource Include="Controls\FollowMe.fr.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.id-ID.resx">
+    <EmbeddedResource Include="Controls\FollowMe.id-ID.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.it-IT.resx">
+    <EmbeddedResource Include="Controls\FollowMe.it-IT.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.ko-KR.resx">
+    <EmbeddedResource Include="Controls\FollowMe.ko-KR.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.pl.resx">
+    <EmbeddedResource Include="Controls\FollowMe.pl.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.pt.resx">
+    <EmbeddedResource Include="Controls\FollowMe.pt.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.ru-KZ.resx">
+    <EmbeddedResource Include="Controls\FollowMe.ru-KZ.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.tr.resx">
+    <EmbeddedResource Include="Controls\FollowMe.tr.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.zh-Hans.resx">
+    <EmbeddedResource Include="Controls\FollowMe.zh-Hans.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.zh-Hant.resx">
+    <EmbeddedResource Include="Controls\FollowMe.zh-Hant.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FollowMe.zh-TW.resx">
+    <EmbeddedResource Include="Controls\FollowMe.zh-TW.resx">
       <DependentUpon>FollowMe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GenOTP.resx">
+    <EmbeddedResource Include="Controls\GenOTP.resx">
       <DependentUpon>GenOTP.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainV2.resx">
@@ -1368,122 +1422,122 @@
     <EmbeddedResource Include="MainV2.zh-TW.resx">
       <DependentUpon>MainV2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.resx">
+    <EmbeddedResource Include="Controls\MovingBase.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.ar.resx">
+    <EmbeddedResource Include="Controls\MovingBase.ar.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.az-Latn-AZ.resx">
+    <EmbeddedResource Include="Controls\MovingBase.az-Latn-AZ.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.de-DE.resx">
+    <EmbeddedResource Include="Controls\MovingBase.de-DE.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.es-ES.resx">
+    <EmbeddedResource Include="Controls\MovingBase.es-ES.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.fr.resx">
+    <EmbeddedResource Include="Controls\MovingBase.fr.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.id-ID.resx">
+    <EmbeddedResource Include="Controls\MovingBase.id-ID.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.it-IT.resx">
+    <EmbeddedResource Include="Controls\MovingBase.it-IT.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.ja-JP.resx">
+    <EmbeddedResource Include="Controls\MovingBase.ja-JP.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.ko-KR.resx">
+    <EmbeddedResource Include="Controls\MovingBase.ko-KR.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.pl.resx">
+    <EmbeddedResource Include="Controls\MovingBase.pl.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.pt.resx">
+    <EmbeddedResource Include="Controls\MovingBase.pt.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.ru-KZ.resx">
+    <EmbeddedResource Include="Controls\MovingBase.ru-KZ.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.tr.resx">
+    <EmbeddedResource Include="Controls\MovingBase.tr.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.zh-Hans.resx">
+    <EmbeddedResource Include="Controls\MovingBase.zh-Hans.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.zh-Hant.resx">
+    <EmbeddedResource Include="Controls\MovingBase.zh-Hant.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MovingBase.zh-TW.resx">
+    <EmbeddedResource Include="Controls\MovingBase.zh-TW.resx">
       <DependentUpon>MovingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="OpenGLtest.resx">
+    <EmbeddedResource Include="Controls\OpenGLtest.resx">
       <DependentUpon>OpenGLtest.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="OpenGLtest2.resx">
+    <EmbeddedResource Include="Controls\OpenGLtest2.resx">
       <DependentUpon>OpenGLtest2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="OSDVideo.resx">
+    <EmbeddedResource Include="Controls\OSDVideo.resx">
       <DependentUpon>OSDVideo.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="paramcompare.resx">
+    <EmbeddedResource Include="Controls\paramcompare.resx">
       <DependentUpon>paramcompare.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.ar.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.ar.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.az-Latn-AZ.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.az-Latn-AZ.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.de-DE.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.de-DE.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.es-ES.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.es-ES.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.fr.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.fr.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.id-ID.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.id-ID.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.it-IT.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.it-IT.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.ja-JP.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.ja-JP.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.ko-KR.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.ko-KR.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.pl.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.pl.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.pt.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.pt.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.ru-KZ.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.ru-KZ.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.tr.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.tr.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.zh-Hans.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.zh-Hans.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.zh-Hant.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.zh-Hant.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RAW_Sensor.zh-TW.resx">
+    <EmbeddedResource Include="Controls\RAW_Sensor.zh-TW.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ResEdit.resx">
@@ -1498,154 +1552,154 @@
     <EmbeddedResource Include="resedit.zh-TW.resx">
       <DependentUpon>ResEdit.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.ar.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.ar.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.az-Latn-AZ.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.az-Latn-AZ.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.id-ID.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.id-ID.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.ja-JP.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.ja-JP.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.ko-KR.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.ko-KR.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.pt.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.pt.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.ru-KZ.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.ru-KZ.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.tr.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.tr.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.zh-Hans.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.zh-Hans.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.zh-Hant.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.zh-Hant.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScriptConsole.zh-TW.resx">
+    <EmbeddedResource Include="Controls\ScriptConsole.zh-TW.resx">
       <DependentUpon>ScriptConsole.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialInjectGPS.resx">
-      <DependentUpon>SerialInjectGPS.cs</DependentUpon>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.resx">
+      <DependentUpon>ConfigSerialInjectGPS.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialInjectGPS.ar.resx">
-      <DependentUpon>SerialInjectGPS.cs</DependentUpon>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.ar.resx">
+      <DependentUpon>ConfigSerialInjectGPS.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialInjectGPS.az-Latn-AZ.resx">
-      <DependentUpon>SerialInjectGPS.cs</DependentUpon>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.az-Latn-AZ.resx">
+      <DependentUpon>ConfigSerialInjectGPS.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialInjectGPS.de-DE.resx">
-      <DependentUpon>SerialInjectGPS.cs</DependentUpon>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.de-DE.resx">
+      <DependentUpon>ConfigSerialInjectGPS.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialInjectGPS.id-ID.resx">
-      <DependentUpon>SerialInjectGPS.cs</DependentUpon>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.id-ID.resx">
+      <DependentUpon>ConfigSerialInjectGPS.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialInjectGPS.ja-JP.resx">
-      <DependentUpon>SerialInjectGPS.cs</DependentUpon>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.ja-JP.resx">
+      <DependentUpon>ConfigSerialInjectGPS.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialInjectGPS.ko-KR.resx">
-      <DependentUpon>SerialInjectGPS.cs</DependentUpon>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.ko-KR.resx">
+      <DependentUpon>ConfigSerialInjectGPS.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialInjectGPS.pt.resx">
-      <DependentUpon>SerialInjectGPS.cs</DependentUpon>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.pt.resx">
+      <DependentUpon>ConfigSerialInjectGPS.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialInjectGPS.ru-KZ.resx">
-      <DependentUpon>SerialInjectGPS.cs</DependentUpon>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.ru-KZ.resx">
+      <DependentUpon>ConfigSerialInjectGPS.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialInjectGPS.tr.resx">
-      <DependentUpon>SerialInjectGPS.cs</DependentUpon>
+    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigSerialInjectGPS.tr.resx">
+      <DependentUpon>ConfigSerialInjectGPS.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputMD.resx">
+    <EmbeddedResource Include="Controls\SerialOutputMD.resx">
       <DependentUpon>SerialOutputMD.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputMD.ar.resx">
+    <EmbeddedResource Include="Controls\SerialOutputMD.ar.resx">
       <DependentUpon>SerialOutputMD.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputMD.az-Latn-AZ.resx">
+    <EmbeddedResource Include="Controls\SerialOutputMD.az-Latn-AZ.resx">
       <DependentUpon>SerialOutputMD.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputMD.id-ID.resx">
+    <EmbeddedResource Include="Controls\SerialOutputMD.id-ID.resx">
       <DependentUpon>SerialOutputMD.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputMD.ja-JP.resx">
+    <EmbeddedResource Include="Controls\SerialOutputMD.ja-JP.resx">
       <DependentUpon>SerialOutputMD.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputMD.ko-KR.resx">
+    <EmbeddedResource Include="Controls\SerialOutputMD.ko-KR.resx">
       <DependentUpon>SerialOutputMD.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputMD.pt.resx">
+    <EmbeddedResource Include="Controls\SerialOutputMD.pt.resx">
       <DependentUpon>SerialOutputMD.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputMD.ru-KZ.resx">
+    <EmbeddedResource Include="Controls\SerialOutputMD.ru-KZ.resx">
       <DependentUpon>SerialOutputMD.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputMD.tr.resx">
+    <EmbeddedResource Include="Controls\SerialOutputMD.tr.resx">
       <DependentUpon>SerialOutputMD.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputNMEA.resx">
+    <EmbeddedResource Include="Controls\SerialOutputNMEA.resx">
       <DependentUpon>SerialOutputNMEA.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputNMEA.ar.resx">
+    <EmbeddedResource Include="Controls\SerialOutputNMEA.ar.resx">
       <DependentUpon>SerialOutputNMEA.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputNMEA.az-Latn-AZ.resx">
+    <EmbeddedResource Include="Controls\SerialOutputNMEA.az-Latn-AZ.resx">
       <DependentUpon>SerialOutputNMEA.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputNMEA.id-ID.resx">
+    <EmbeddedResource Include="Controls\SerialOutputNMEA.id-ID.resx">
       <DependentUpon>SerialOutputNMEA.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputNMEA.ja-JP.resx">
+    <EmbeddedResource Include="Controls\SerialOutputNMEA.ja-JP.resx">
       <DependentUpon>SerialOutputNMEA.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputNMEA.ko-KR.resx">
+    <EmbeddedResource Include="Controls\SerialOutputNMEA.ko-KR.resx">
       <DependentUpon>SerialOutputNMEA.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputNMEA.pt.resx">
+    <EmbeddedResource Include="Controls\SerialOutputNMEA.pt.resx">
       <DependentUpon>SerialOutputNMEA.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputNMEA.ru-KZ.resx">
+    <EmbeddedResource Include="Controls\SerialOutputNMEA.ru-KZ.resx">
       <DependentUpon>SerialOutputNMEA.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputNMEA.tr.resx">
+    <EmbeddedResource Include="Controls\SerialOutputNMEA.tr.resx">
       <DependentUpon>SerialOutputNMEA.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputPass.resx">
+    <EmbeddedResource Include="Controls\SerialOutputPass.resx">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputPass.ar.resx">
+    <EmbeddedResource Include="Controls\SerialOutputPass.ar.resx">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputPass.az-Latn-AZ.resx">
+    <EmbeddedResource Include="Controls\SerialOutputPass.az-Latn-AZ.resx">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputPass.id-ID.resx">
+    <EmbeddedResource Include="Controls\SerialOutputPass.id-ID.resx">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputPass.ja-JP.resx">
+    <EmbeddedResource Include="Controls\SerialOutputPass.ja-JP.resx">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputPass.ko-KR.resx">
+    <EmbeddedResource Include="Controls\SerialOutputPass.ko-KR.resx">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputPass.pt.resx">
+    <EmbeddedResource Include="Controls\SerialOutputPass.pt.resx">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputPass.ru-KZ.resx">
+    <EmbeddedResource Include="Controls\SerialOutputPass.ru-KZ.resx">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputPass.tr.resx">
+    <EmbeddedResource Include="Controls\SerialOutputPass.tr.resx">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SerialOutputPass.zh-Hans.resx">
+    <EmbeddedResource Include="Controls\SerialOutputPass.zh-Hans.resx">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Splash.resx">
@@ -1868,7 +1922,7 @@
     <EmbeddedResource Include="Controls\ServoOptions.zh-Hans.resx">
       <DependentUpon>ServoOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Controls\SITL.resx">
+    <EmbeddedResource Include="GCSViews\SITL.resx">
       <DependentUpon>SITL.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\ThemeColors.resx">
@@ -2965,9 +3019,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigFriendlyParams.zh-Hans.resx">
       <DependentUpon>ConfigFriendlyParams.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigGPSInject.resx">
-      <DependentUpon>ConfigGPSInject.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GCSViews\ConfigurationView\ConfigHWAirspeed.resx">
       <DependentUpon>ConfigHWAirspeed.cs</DependentUpon>
@@ -4187,7 +4238,7 @@
     <EmbeddedResource Include="Swarm\WaypointLeader\WPControl.tr.resx">
       <DependentUpon>WPControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Utilities\fftui.resx">
+    <EmbeddedResource Include="Controls\fftui.resx">
       <DependentUpon>fftui.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Utilities\AltitudeAngel\AASettings.resx">
@@ -4512,7 +4563,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Update="**/*.Designer.cs">
-      <DependentUpon Condition="Exists($([System.String]::Copy('%(Filename)').ToLower().Replace('.designer','.cs')))">$([System.String]::Copy("%(Filename)").ToLower().Replace(".designer","")).cs</DependentUpon>
+      <DependentUpon Condition="Exists($([System.String]::Copy('%(Filename)').ToLower().Replace('.designer','.cs')))">ConfigSerialInjectGPS.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Update="**/*.99resx">
       <DependentUpon Condition="Exists($([System.Text.RegularExpressions.Regex]::Replace('%(FileName)', '\.[a-zA-Z\-]+', '.cs')))">$([System.Text.RegularExpressions.Regex]::Replace('%(FileName)', '\.[a-zA-Z\-]+', '')).cs</DependentUpon>

@@ -354,8 +354,8 @@ namespace MissionPlanner
         {
             get
             {
-                if (MissionPlanner.Controls.SITL.SITLSEND == null) return false;
-                if (MissionPlanner.Controls.SITL.SITLSEND.Client.Connected) return true;
+                if (MissionPlanner.GCSViews.SITL.SITLSEND == null) return false;
+                if (MissionPlanner.GCSViews.SITL.SITLSEND.Client.Connected) return true;
                 return false;
             }
         }
@@ -410,7 +410,7 @@ namespace MissionPlanner
         public GCSViews.FlightData FlightData;
 
         public GCSViews.FlightPlanner FlightPlanner;
-        Controls.SITL Simulation;
+        GCSViews.SITL Simulation;
 
         private Form connectionStatsForm;
         private ConnectionStats _connectionStats;
@@ -787,7 +787,7 @@ namespace MissionPlanner
                 FlightPlanner = new GCSViews.FlightPlanner();
                 //Configuration = new GCSViews.ConfigurationView.Setup();
                 log.Info("Create SIM");
-                Simulation = new SITL();
+                Simulation = new GCSViews.SITL();
                 //Firmware = new GCSViews.Firmware();
                 //Terminal = new GCSViews.Terminal();
 
@@ -1036,7 +1036,7 @@ namespace MissionPlanner
             if (instance.MyView.current.Control != null && instance.MyView.current.Control.GetType() == typeof(GCSViews.InitialSetup))
             {
                 var page = ((GCSViews.InitialSetup)instance.MyView.current.Control).backstageView.SelectedPage;
-                if (page != null && page.Text == "Install Firmware")
+                if (page != null && page.Text.Contains("Install Firmware"))
                 {
                     return;
                 }
@@ -1957,9 +1957,6 @@ namespace MissionPlanner
             log.Info("stop WarningEngine");
             Warnings.WarningEngine.Stop();
 
-            log.Info("stop UDPVideoShim");
-            UDPVideoShim.Stop();
-
             log.Info("stop GStreamer");
             GStreamer.StopAll();
 
@@ -2228,7 +2225,7 @@ namespace MissionPlanner
                                     {
                                         if (sitl)
                                         {
-                                            MissionPlanner.Controls.SITL.rcinput();
+                                            MissionPlanner.GCSViews.SITL.rcinput();
                                         }
                                         else
                                         {
@@ -2263,7 +2260,7 @@ namespace MissionPlanner
                                     {
                                         if (sitl)
                                         {
-                                            MissionPlanner.Controls.SITL.rcinput();
+                                            MissionPlanner.GCSViews.SITL.rcinput();
                                         }
                                         else
                                         {
@@ -2295,7 +2292,7 @@ namespace MissionPlanner
                 //                        Console.WriteLine(DateTime.Now.Millisecond);
                 if (comPort.BaseStream.IsOpen)
                 {
-                    if ((string) this.MenuConnect.Image.Tag != "Disconnect")
+                    if (this.MenuConnect.Image == null || (string) this.MenuConnect.Image.Tag != "Disconnect")
                     {
                         this.BeginInvoke((MethodInvoker) delegate
                         {
@@ -2419,7 +2416,7 @@ namespace MissionPlanner
 
             SerialThreadrunner.Reset();
 
-            int minbytes = 0;
+            int minbytes = 10;
 
             int altwarningmax = 0;
 
@@ -2986,17 +2983,83 @@ namespace MissionPlanner
             // update firmware version list - only once per day
             ThreadPool.QueueUserWorkItem(BGFirmwareCheck);
 
-            log.Info("start udpvideoshim");
-            // start listener
-            UDPVideoShim.Start();
+            log.Info("start AutoConnect");
+            AutoConnect.NewMavlinkConnection += (sender, serial) => {
+                try
+                {
+                    MainV2.instance.BeginInvoke((Action) delegate
+                    {
+                        if (MainV2.comPort.BaseStream.IsOpen)
+                        {
+                            var mav = new MAVLinkInterface();
+                            mav.BaseStream = serial;
+                            MainV2.instance.doConnect(mav, "preset", serial.PortName);
 
-            log.Info("start udpmavlinkshim");
-            UDPMavlinkShim.Start();
+                            MainV2.Comports.Add(mav);
+                        }
+                        else
+                        {
+                            MainV2.comPort.BaseStream = serial;
+                            MainV2.instance.doConnect(MainV2.comPort, "preset", serial.PortName);
+                        }
+                    });
+                }catch (Exception ex) { log.Error(ex);}
+            };
+            AutoConnect.NewVideoStream += (sender, gststring) =>
+            {
+                try
+                {
+                    GStreamer.gstlaunch = GStreamer.LookForGstreamer();
+
+                    if (!File.Exists(GStreamer.gstlaunch))
+                    {
+                        if (CustomMessageBox.Show(
+                                "A video stream has been detected, but gstreamer has not been configured/installed.\nDo you want to install/config it now?",
+                                "GStreamer", System.Windows.Forms.MessageBoxButtons.YesNo) ==
+                            (int) System.Windows.Forms.DialogResult.Yes)
+                        {
+                            {
+                                ProgressReporterDialogue prd = new ProgressReporterDialogue();
+                                ThemeManager.ApplyThemeTo(prd);
+                                prd.DoWork += sender2 =>
+                                {
+                                    GStreamer.DownloadGStreamer(((i, s) =>
+                                    {
+                                        prd.UpdateProgressAndStatus(i, s);
+                                        if (prd.doWorkArgs.CancelRequested) throw new Exception("User Request");
+                                    }));
+                                };
+                                prd.RunBackgroundOperationAsync();
+
+                                GStreamer.gstlaunch = GStreamer.LookForGstreamer();
+                            }
+                            if (!File.Exists(GStreamer.gstlaunch))
+                            {
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    GStreamer.StartA(gststring);
+                }
+                catch (Exception ex)
+                {
+                    log.Error(ex);
+                }
+            };
+            AutoConnect.Start();
 
             BinaryLog.onFlightMode += (firmware, modeno) =>
             {
                 try
                 {
+                    if (firmware == "")
+                        return null;
+
                     var modes = Common.getModesList((Firmwares) Enum.Parse(typeof(Firmwares), firmware));
                     string currentmode = null;
 
@@ -3019,18 +3082,30 @@ namespace MissionPlanner
 
             GStreamer.onNewImage += (sender, image) =>
             {
+                if (image == null)
+                    return;
+                var bmp = (image as Utilities.Drawing.Bitmap);
+                if (bmp == null)
+                    return;
                 var old = GCSViews.FlightData.myhud.bgimage;
-                GCSViews.FlightData.myhud.bgimage = new Bitmap(image.Width, image.Height, 4*image.Width, PixelFormat.Format32bppPArgb,
-                    (image as Utilities.Drawing.Bitmap).LockBits(Rectangle.Empty, null,SKColorType.Bgra8888).Scan0);
+                GCSViews.FlightData.myhud.bgimage = new Bitmap(image.Width, image.Height, 4 * image.Width,
+                    PixelFormat.Format32bppPArgb,
+                    bmp.LockBits(Rectangle.Empty, null, SKColorType.Bgra8888)
+                    .Scan0);
                 if (old != null)
                     old.Dispose();
             };
 
             vlcrender.onNewImage += (sender, image) =>
             {
+                if (image == null)
+                    return;
+                var bmp = (image as Utilities.Drawing.Bitmap);
+                if (bmp == null)
+                    return;
                 var old = GCSViews.FlightData.myhud.bgimage;
                 GCSViews.FlightData.myhud.bgimage = new Bitmap(image.Width, image.Height, 4 * image.Width, PixelFormat.Format32bppPArgb,
-                    (image as Utilities.Drawing.Bitmap).LockBits(Rectangle.Empty, null,SKColorType.Bgra8888).Scan0);
+                    bmp.LockBits(Rectangle.Empty, null,SKColorType.Bgra8888).Scan0);
                 if (old != null)
                     old.Dispose();
                 };
@@ -3218,7 +3293,7 @@ namespace MissionPlanner
                                 "GStreamer", System.Windows.Forms.MessageBoxButtons.YesNo) ==
                             (int)System.Windows.Forms.DialogResult.Yes)
                         {
-                            UDPVideoShim.DownloadGStreamer();
+                            GStreamerUI.DownloadGStreamer();
                         }
                     }
 
@@ -3521,14 +3596,16 @@ namespace MissionPlanner
             }
             if (keyData == (Keys.Control | Keys.X))
             {
-                var ftp = new MissionPlanner.ArduPilot.Mavlink.MAVFtp(MainV2.comPort, (byte) comPort.sysidcurrent, (byte) comPort.compidcurrent);
+                //var ftp = new MissionPlanner.ArduPilot.Mavlink.MAVFtp(MainV2.comPort, (byte) comPort.sysidcurrent, (byte) comPort.compidcurrent);
 
-                ftp.test();
+                new MavFTPUI(comPort).ShowUserControl();
+
+                //ftp.test();
 
             }
             if (keyData == (Keys.Control | Keys.L)) // limits
             {
-                new GCSViews.ConfigurationView.ConfigUAVCAN().ShowUserControl();
+                new DigitalSkyUI().ShowUserControl();
 
                 return true;
             }
@@ -3540,47 +3617,6 @@ namespace MissionPlanner
             }
             if (keyData == (Keys.Control | Keys.Z))
             {
-                //WHOAMI
-//#define MPUREG_WHOAMI                               0x75
-                //INV2REG_WHO_AM_I               INV2REG(REG_BANK0,0x00U)
-
-                foreach (var item in Enum.GetNames(typeof(hal_ins_spi)))
-                {
-                    log.Info(item);
-                    MainV2.comPort.device_op((byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, MAVLink.DEVICE_OP_BUSTYPE.SPI, item, 0, 0, 0x00, 1);
-                }
-
-                foreach (var item in Enum.GetNames(typeof(hal_ins_i2c)))
-                {
-                    log.Info(item);
-                    var test = (byte)(int)Enum.Parse(typeof(hal_ins_i2c), item);                  
-                    MainV2.comPort.device_op((byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, MAVLink.DEVICE_OP_BUSTYPE.I2C, "", 0, (byte)test, 0, 1);
-                    MainV2.comPort.device_op((byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, MAVLink.DEVICE_OP_BUSTYPE.I2C, "", 1, (byte)test, 0, 1);
-                    MainV2.comPort.device_op((byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, MAVLink.DEVICE_OP_BUSTYPE.I2C, "", 2, (byte)test, 0, 1);
-                    MainV2.comPort.device_op((byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, MAVLink.DEVICE_OP_BUSTYPE.I2C, "", 3, (byte)test, 0, 1);
-                }
-
-                // enable led
-                MainV2.comPort.device_op((byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, MAVLink.DEVICE_OP_BUSTYPE.I2C, "", 1, (byte)hal_ins_i2c.TOSHIBA_LED_I2C_ADDR, 4, 1, new byte[] { 3 });
-                // get register 1 
-                MainV2.comPort.device_op((byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, MAVLink.DEVICE_OP_BUSTYPE.I2C, "", 1, (byte)hal_ins_i2c.TOSHIBA_LED_I2C_ADDR, 1, 4);
-                // write pwm0 reg 1
-                byte r = 0 ;
-                byte g =0;
-                byte b =0;
-                for (r = 0; r <= 16; r++)
-                {
-                    for (g = 0; g <= 16; g++)
-                    {
-                        for (b = 0; b <= 16; b++)
-                        {
-                            MainV2.comPort.device_op((byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, MAVLink.DEVICE_OP_BUSTYPE.I2C, "", 1, (byte)hal_ins_i2c.TOSHIBA_LED_I2C_ADDR, 1, 3, new byte[] { b, g, r }); // b g r 
-                        }
-                    }
-                }
-                // get register 1 
-                MainV2.comPort.device_op((byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, MAVLink.DEVICE_OP_BUSTYPE.I2C, "", 1, (byte)hal_ins_i2c.TOSHIBA_LED_I2C_ADDR, 1, 4);
-
                 return true;
             }
             if (keyData == (Keys.Control | Keys.T)) // for override connect

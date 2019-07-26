@@ -1,0 +1,48 @@
+@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
+@using System.IO
+
+<div class="sidebar">
+    <NavMenu />
+</div>
+
+<div class="main">
+    <div class="top-row px-4">
+        <!--<a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>-->
+        By Michael Oborne
+        <div id="g-signin2" class="g-signin2"></div>
+    </div>
+
+    <div class="content px-4">
+        @Body
+    </div>
+</div>
+
+@code
+{
+    private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+
+    protected override async Task OnInitAsync()
+    {
+        var paramdata = "ParameterMetaDataBackup.xml";
+        if (!File.Exists(paramdata))
+        {
+            log.Info("get param");
+            var content = await Http.GetStringAsync((paramdata));
+            log.Info("get param done");
+
+            File.WriteAllText(paramdata, content);
+        }
+    }
+
+    protected override void OnAfterRender()
+    {
+        base.OnAfterRender();
+
+        JSRuntime.InvokeAsync<object>("renderButton", new { });
+
+        Console.WriteLine("MainLayout OnAfterRender Done");
+    }
+}

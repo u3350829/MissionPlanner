@@ -1070,25 +1070,25 @@ namespace MissionPlanner.GCSViews
                     {
                         double time = (Environment.TickCount - tickStart)/1000.0;
                         if (list1item != null)
-                            list1.Add(time, ConvertToDouble(list1item.GetValue(MainV2.comPort.MAV.cs, null)));
+                            list1.Add(time, (list1item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                         if (list2item != null)
-                            list2.Add(time, ConvertToDouble(list2item.GetValue(MainV2.comPort.MAV.cs, null)));
+                            list2.Add(time, (list2item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                         if (list3item != null)
-                            list3.Add(time, ConvertToDouble(list3item.GetValue(MainV2.comPort.MAV.cs, null)));
+                            list3.Add(time, (list3item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                         if (list4item != null)
-                            list4.Add(time, ConvertToDouble(list4item.GetValue(MainV2.comPort.MAV.cs, null)));
+                            list4.Add(time, (list4item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                         if (list5item != null)
-                            list5.Add(time, ConvertToDouble(list5item.GetValue(MainV2.comPort.MAV.cs, null)));
+                            list5.Add(time, (list5item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                         if (list6item != null)
-                            list6.Add(time, ConvertToDouble(list6item.GetValue(MainV2.comPort.MAV.cs, null)));
+                            list6.Add(time, (list6item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                         if (list7item != null)
-                            list7.Add(time, ConvertToDouble(list7item.GetValue(MainV2.comPort.MAV.cs, null)));
+                            list7.Add(time, (list7item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                         if (list8item != null)
-                            list8.Add(time, ConvertToDouble(list8item.GetValue(MainV2.comPort.MAV.cs, null)));
+                            list8.Add(time, (list8item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                         if (list9item != null)
-                            list9.Add(time, ConvertToDouble(list9item.GetValue(MainV2.comPort.MAV.cs, null)));
+                            list9.Add(time, (list9item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                         if (list10item != null)
-                            list10.Add(time, ConvertToDouble(list10item.GetValue(MainV2.comPort.MAV.cs, null)));
+                            list10.Add(time, (list10item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                     }
 
                     // update map
@@ -1420,8 +1420,9 @@ namespace MissionPlanner.GCSViews
                             // draw guide mode point for only main mav
                             if (MainV2.comPort.MAV.cs.mode.ToLower() == "guided" && MainV2.comPort.MAV.GuidedMode.x != 0)
                             {
-                                addpolygonmarker("Guided Mode", MainV2.comPort.MAV.GuidedMode.y,
-                                    MainV2.comPort.MAV.GuidedMode.x, (int)MainV2.comPort.MAV.GuidedMode.z, Color.Blue,
+                                addpolygonmarker("Guided Mode", MainV2.comPort.MAV.GuidedMode.y / 1e7,
+                                    MainV2.comPort.MAV.GuidedMode.x / 1e7, (int) MainV2.comPort.MAV.GuidedMode.z,
+                                    Color.Blue,
                                     routes);
                             }
 
@@ -1479,63 +1480,6 @@ namespace MissionPlanner.GCSViews
                 }
             }
             Console.WriteLine("FD Main loop exit");
-        }
-
-        private double ConvertToDouble(object input)
-        {
-            if (input.GetType() == typeof (float))
-            {
-                return (float) input;
-            }
-            if (input.GetType() == typeof (double))
-            {
-                return (double) input;
-            }
-            if (input.GetType() == typeof(ulong))
-            {
-                return (ulong)input;
-            }
-            if (input.GetType() == typeof(long))
-            {
-                return (long)input;
-            }
-            if (input.GetType() == typeof (int))
-            {
-                return (int) input;
-            }
-            if (input.GetType() == typeof(uint))
-            {
-                return (uint)input;
-            }
-            if (input.GetType() == typeof(short))
-            {
-                return (short)input;
-            }
-            if (input.GetType() == typeof (ushort))
-            {
-                return (ushort) input;
-            }
-            if (input.GetType() == typeof (bool))
-            {
-                return (bool) input ? 1 : 0;
-            }
-            if (input.GetType() == typeof(string))
-            {
-                double ans = 0;
-                if (double.TryParse((string)input, out ans))
-                {
-                    return ans;
-                }
-            }
-            if (input is Enum)
-            {
-                return Convert.ToInt32(input);
-            }
-
-            if (input == null)
-                throw new Exception("Bad Type Null");
-            else 
-                throw new Exception("Bad Type " + input.GetType().ToString());
         }
 
         private void updateClearRoutesMarkers()
@@ -3464,8 +3408,8 @@ namespace MissionPlanner.GCSViews
                 MainV2.comPort.setGuidedModeWP(new Locationwp
                 {
                     alt = MainV2.comPort.MAV.GuidedMode.z,
-                    lat = MainV2.comPort.MAV.GuidedMode.x,
-                    lng = MainV2.comPort.MAV.GuidedMode.y
+                    lat = MainV2.comPort.MAV.GuidedMode.x / 1e7,
+                    lng = MainV2.comPort.MAV.GuidedMode.y / 1e7
                 });
             }
         }
@@ -3837,8 +3781,16 @@ namespace MissionPlanner.GCSViews
             {
                 try
                 {
+                    var alt = srtm.getAltitude(MouseDownStart.Lat, MouseDownStart.Lng);
+
+                    if (alt.currenttype != srtm.tiletype.valid)
+                    {
+                        CustomMessageBox.Show("No SRTM data for this area", Strings.ERROR);
+                        return;
+                    }
+
                     MainV2.comPort.doCommand(MAVLink.MAV_CMD.DO_SET_HOME, 0, 0, 0, 0, (float) MouseDownStart.Lat,
-                        (float) MouseDownStart.Lng, (float) srtm.getAltitude(MouseDownStart.Lat, MouseDownStart.Lng).alt);
+                        (float) MouseDownStart.Lng, (float)alt.alt);
                 }
                 catch
                 {
@@ -4616,9 +4568,13 @@ namespace MissionPlanner.GCSViews
             {
                 Settings.Instance["gstreamer_url"] = url;
 
+                GStreamer.StopAll();
+
+                GStreamer.LookForGstreamer();
+
                 if (!File.Exists(GStreamer.gstlaunch))
                 {
-                    UDPVideoShim.DownloadGStreamer();
+                    GStreamerUI.DownloadGStreamer();
 
                     if (!File.Exists(GStreamer.gstlaunch))
                     {
@@ -4639,11 +4595,19 @@ namespace MissionPlanner.GCSViews
             if (!MainV2.comPort.BaseStream.IsOpen)
                 return;
 
+            var alt = srtm.getAltitude(MouseDownStart.Lat, MouseDownStart.Lng);
+
+            if(alt.currenttype != srtm.tiletype.valid)
+            {
+                CustomMessageBox.Show("No SRTM data for this area", Strings.ERROR);
+                return;
+            }
+
             MAVLink.mavlink_set_gps_global_origin_t go = new MAVLink.mavlink_set_gps_global_origin_t()
             {
                 latitude = (int)(MouseDownStart.Lat * 1e7),
                 longitude = (int)(MouseDownStart.Lng * 1e7),
-                altitude = (int)srtm.getAltitude(MouseDownStart.Lat, MouseDownStart.Lng).alt,
+                altitude = (int)alt.alt,
                 target_system = MainV2.comPort.MAV.sysid
             };
 
@@ -4709,6 +4673,33 @@ namespace MissionPlanner.GCSViews
             }
 
             Settings.config["groundColorToolStripMenuItem"] = groundColorToolStripMenuItem.Checked.ToString();
+        }
+
+        private void HereLinkVideoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            GStreamer.StopAll();
+
+            string url =
+                "rtspsrc location=rtsp://192.168.43.1:8554/fpv_stream latency=41 udp-reconnect=1 timeout=0 do-retransmission=false ! application/x-rtp ! rtph264depay ! h264parse ! queue ! avdec_h264 ! video/x-raw,format=BGRx ! appsink name=outsink";
+
+            GStreamer.LookForGstreamer();
+
+                if (!File.Exists(GStreamer.gstlaunch))
+                {
+                    GStreamerUI.DownloadGStreamer();
+
+                    if (!File.Exists(GStreamer.gstlaunch))
+                    {
+                        return;
+                    }
+                }
+
+                GStreamer.StartA(url);
+        }
+
+        private void GStreamerStopToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            GStreamer.StopAll();
         }
     }
 }

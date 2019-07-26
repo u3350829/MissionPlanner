@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net461</TargetFrameworks>
     <ApplicationIcon />
     <OutputTypeEx>library</OutputTypeEx>
     <StartupObject />
@@ -12,25 +12,16 @@
     <RootNamespace>GDAL</RootNamespace>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="gdal\**" />
-    <Compile Remove="Native\**" />
-    <EmbeddedResource Remove="gdal\**" />
-    <EmbeddedResource Remove="Native\**" />
-    <None Remove="gdal\**" />
-    <None Remove="Native\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GDAL" Version="1.11.1" />
+    <PackageReference Include="GDAL" Version="2.4.2" />
+    <PackageReference Include="GDAL.Native" Version="2.4.2" />
     <PackageReference Include="log4net" Version="2.0.8" />
-    <PackageReference Include="MP.GDAL.Native" Version="2.2.3" />
     <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
     <ProjectReference Include="..\GMap.NET.Core\GMap.NET.Core.csproj" />
+    <ProjectReference Include="..\GMap.NET.Drawing\GMap.NET.Drawing.csproj" />
 	
   </ItemGroup>
 

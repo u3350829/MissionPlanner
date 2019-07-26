@@ -114,6 +114,7 @@ navbar-toggler-icon
     .main .top-row {
         position: sticky;
         top: 0;
+        z-index: 1;
     }
 
     .main > div {
@@ -143,4 +144,26 @@ navbar-toggler-icon
 #paramlist {
     width: 100%;
     display: table;
+}
+
+.pace {
+    -webkit-pointer-events: none;
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.pace-inactive {
+    display: none;
+}
+
+.pace .pace-progress {
+    background-color: rgba(0, 0, 0, 0.19999999999999996);
+    position: fixed;
+    z-index: -1;
+    top: 0;
+    right: 100%;
+    bottom: 0;
+    width: 100%;
 }

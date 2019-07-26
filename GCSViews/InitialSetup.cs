@@ -110,6 +110,8 @@ namespace MissionPlanner.GCSViews
                         isConnected);
                     AddBackstageViewPage(typeof(ConfigFirmware), rm.GetString("backstageViewPagefw.Text"),
                         isDisConnected);
+                    AddBackstageViewPage(typeof(ConfigFirmwareManifest), rm.GetString("backstageViewPagefw.Text") + " Manifest",
+                        isDisConnected);
                 }
             }
 
@@ -151,7 +153,7 @@ namespace MissionPlanner.GCSViews
             AddBackstageViewPage(typeof(ConfigHWIDs), "HW ID", isConnected, mand);
 
             var opt = AddBackstageViewPage(typeof(ConfigOptional), rm.GetString("backstageViewPageopt.Text"));
-            AddBackstageViewPage(typeof(ConfigGPSInject), "RTK/GPS Inject", true, opt);
+            AddBackstageViewPage(typeof(ConfigSerialInjectGPS), "RTK/GPS Inject", true, opt);
             if (MainV2.DisplayConfiguration.displaySikRadio)
             {
                 AddBackstageViewPage(typeof(Sikradio), rm.GetString("backstageViewPageSikradio.Text"), true, opt);
@@ -164,7 +166,7 @@ namespace MissionPlanner.GCSViews
             if (MainV2.DisplayConfiguration.displayCAN)
             {
                 //AddBackstageViewPage(typeof(ConfigHWCAN), "CAN", isConnected, opt);
-                AddBackstageViewPage(typeof(ConfigUAVCAN), "UAVCAN", isConnected, opt);
+                AddBackstageViewPage(typeof(ConfigUAVCAN), "UAVCAN", true, opt);
             }
 
             if (MainV2.DisplayConfiguration.displayCompassMotorCalib)

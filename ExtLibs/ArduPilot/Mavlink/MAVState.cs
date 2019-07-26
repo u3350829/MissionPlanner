@@ -23,14 +23,14 @@ namespace MissionPlanner
             this.parent = mavLinkInterface;
             this.sysid = sysid;
             this.compid = compid;
-            this.packetspersecond = new Dictionary<uint, double>();
-            this.packetspersecondbuild = new Dictionary<uint, DateTime>();
+            this.packetspersecond = new Dictionary<uint, double>(byte.MaxValue);
+            this.packetspersecondbuild = new Dictionary<uint, DateTime>(byte.MaxValue);
             this.lastvalidpacket = DateTime.MinValue;
             sendlinkid = (byte)(new Random().Next(256));
             signing = false;
             this.param = new MAVLinkParamList();
-            this.packets = new Dictionary<uint, Queue<MAVLinkMessage>>();
-            this.packetsLast = new Dictionary<uint, MAVLinkMessage>();
+            this.packets = new Dictionary<uint, Queue<MAVLinkMessage>>(byte.MaxValue);
+            this.packetsLast = new Dictionary<uint, MAVLinkMessage>(byte.MaxValue);
             this.aptype = 0;
             this.apname = 0;
             this.recvpacketcount = 0;
@@ -237,7 +237,7 @@ namespace MissionPlanner
         /// <summary>
         /// used as a snapshot of what is loaded on the ap atm. - derived from the stream
         /// </summary>
-        public ConcurrentDictionary<int, mavlink_mission_item_t> wps = new ConcurrentDictionary<int, mavlink_mission_item_t>();
+        public ConcurrentDictionary<int, mavlink_mission_item_int_t> wps = new ConcurrentDictionary<int, mavlink_mission_item_int_t>();
 
         public ConcurrentDictionary<int, mavlink_rally_point_t> rallypoints = new ConcurrentDictionary<int, mavlink_rally_point_t>();
 
@@ -248,7 +248,7 @@ namespace MissionPlanner
         /// <summary>
         /// Store the guided mode wp location
         /// </summary>
-        public mavlink_mission_item_t GuidedMode = new mavlink_mission_item_t();
+        public mavlink_mission_item_int_t GuidedMode = new mavlink_mission_item_int_t();
 
         public Proximity Proximity;
 

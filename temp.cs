@@ -29,6 +29,7 @@ using Microsoft.Scripting.Utils;
 using MissionPlanner.Comms;
 using MissionPlanner.Controls;
 using MissionPlanner.GCSViews;
+using MissionPlanner.GCSViews.ConfigurationView;
 using MissionPlanner.GeoRef;
 using MissionPlanner.Log;
 using MissionPlanner.Maps;
@@ -174,10 +175,14 @@ namespace MissionPlanner
 
         private void BUT_paramgen_Click(object sender, EventArgs e)
         {
+            /*
             if(MissionPlanner.Utilities.Update.dobeta)
                 ParameterMetaDataParser.GetParameterInformation(ConfigurationManager.AppSettings["ParameterLocationsBleeding"]);
             else
                 ParameterMetaDataParser.GetParameterInformation(ConfigurationManager.AppSettings["ParameterLocations"]);
+                */
+            // scan latest, and append older
+            ParameterMetaDataParser.GetParameterInformation(ConfigurationManager.AppSettings["ParameterLocationsBleeding"] + ";" + ConfigurationManager.AppSettings["ParameterLocations"]);
 
             ParameterMetaDataRepositoryAPM.Reload();
         }
@@ -588,7 +593,7 @@ namespace MissionPlanner
 
         private void but_injectgps_Click(object sender, EventArgs e)
         {
-            new SerialInjectGPS().Show();
+            new ConfigSerialInjectGPS().Show();
         }
 
         private void BUT_fft_Click(object sender, EventArgs e)
@@ -653,7 +658,7 @@ namespace MissionPlanner
                 }
                 else
                 {
-                    UDPVideoShim.DownloadGStreamer();
+                    GStreamerUI.DownloadGStreamer();
                 }
             }
             catch (Exception ex)
