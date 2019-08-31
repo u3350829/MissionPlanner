@@ -16,6 +16,8 @@ namespace MissionPlanner.Utilities
     {
         static Settings _instance;
 
+        public static string AppConfigName { get; set; } = "Mission Planner";
+
         public static Settings Instance
         {
             get
@@ -80,6 +82,8 @@ namespace MissionPlanner.Utilities
             return config.ContainsKey(key);
         }
 
+        public string UserAgent { get; set; } = "";
+        
         public string ComPort
         {
             get { return this["comport"]; }
@@ -259,7 +263,7 @@ namespace MissionPlanner.Utilities
                 return GetUserDataDirectory();
             }
 
-            var path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + Path.DirectorySeparatorChar + "Mission Planner" +
+            var path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + Path.DirectorySeparatorChar + AppConfigName +
                           Path.DirectorySeparatorChar;
 
             return path;
@@ -271,7 +275,7 @@ namespace MissionPlanner.Utilities
         /// <returns></returns>
         public static string GetUserDataDirectory()
         {
-            var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + Path.DirectorySeparatorChar + "Mission Planner" +
+            var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + Path.DirectorySeparatorChar + AppConfigName +
                           Path.DirectorySeparatorChar;
 
             return path;

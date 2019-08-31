@@ -135,7 +135,7 @@ namespace MissionPlanner
         /// <summary>
         /// progress form to handle connect and param requests
         /// </summary>
-        IProgressReporterDialogue frmProgressReporter;
+        public IProgressReporterDialogue frmProgressReporter;
 
         /// <summary>
         /// used for outbound packet sending
@@ -798,7 +798,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
         /// </summary>
         /// <param name="messageType">type number = MAVLINK_MSG_ID</param>
         /// <param name="indata">struct of data</param>
-        internal void generatePacket(int messageType, object indata, int sysid, int compid, bool forcemavlink2 = false, bool forcesigning = false)
+        public void generatePacket(int messageType, object indata, int sysid, int compid, bool forcemavlink2 = false, bool forcesigning = false)
         {
             if (BaseStream == null || !BaseStream.IsOpen)
             {
@@ -1541,7 +1541,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
             log.Info("GetParam name: '" + name + "' or index: " + index + " " + sysid + ":" + compid);
 
             MAVLinkMessage buffer;
-
+            giveComport = true;
             mavlink_param_request_read_t req = new mavlink_param_request_read_t();
             req.target_system = sysid;
             req.target_component = compid;
@@ -1558,10 +1558,9 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
 
             if (!requireresponce)
             {
+                giveComport = false;
                 return 0f;
             }
-
-            giveComport = true;
 
             DateTime start = DateTime.Now;
             int retrys = 3;
@@ -2605,7 +2604,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                         if (datin.sig != null)
                             sig = Convert.ToBase64String(datin.sig);
 
-                        textoutput = textoutput + delimeter + "sig " + sig + delimeter + "Len" + delimeter + datin.Length + "\r\n";
+                        textoutput = textoutput + delimeter + "sig " + sig + delimeter + "Len" + delimeter + datin.Length + delimeter +"crc16" + delimeter+ datin.crc16 + "\r\n";
                         if (PrintToConsole)
                             Console.Write(textoutput);
 
@@ -2629,7 +2628,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
         /// </summary>
         /// <param name="startwp"></param>
         /// <param name="endwp"></param>
-        public void setWPPartialUpdate(ushort startwp, ushort endwp)
+        public void setWPPartialUpdate(ushort startwp, ushort endwp, MAV_MISSION_TYPE type = MAV_MISSION_TYPE.MISSION)
         {
             mavlink_mission_write_partial_list_t req = new mavlink_mission_write_partial_list_t();
 
@@ -2638,6 +2637,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
 
             req.start_index = (short) startwp;
             req.end_index = (short) endwp;
+            req.mission_type = (byte)type;
 
             generatePacket((byte) MAVLINK_MSG_ID.MISSION_WRITE_PARTIAL_LIST, req);
         }
@@ -2795,9 +2795,9 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
         }
 
         public MAV_MISSION_RESULT setWP(Locationwp loc, ushort index, MAV_FRAME frame, byte current = 0,
-            byte autocontinue = 1, bool use_int = false)
+            byte autocontinue = 1, bool use_int = false, MAV_MISSION_TYPE mission_type = MAV_MISSION_TYPE.MISSION)
         {
-            return setWP(MAV.sysid, MAV.compid, loc, index, frame, current, autocontinue, use_int);
+            return setWP(MAV.sysid, MAV.compid, loc, index, frame, current, autocontinue, use_int, mission_type);
         }
 
         /// <summary>
@@ -2808,7 +2808,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
         /// <param name="frame">global or relative</param>
         /// <param name="current">0 = no , 2 = guided mode</param>
         public MAV_MISSION_RESULT setWP(byte sysid, byte compid, Locationwp loc, ushort index, MAV_FRAME frame, byte current = 0,
-            byte autocontinue = 1, bool use_int = false)
+            byte autocontinue = 1, bool use_int = false, MAV_MISSION_TYPE mission_type = MAV_MISSION_TYPE.MISSION)
         {
             if (use_int)
             {
@@ -2821,6 +2821,8 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
 
                 req.current = current;
                 req.autocontinue = autocontinue;
+
+                req.mission_type = (byte)mission_type;
 
                 req.frame = (byte) frame;
                 if (loc.id == (ushort)MAV_CMD.DO_DIGICAM_CONTROL || loc.id == (ushort)MAV_CMD.DO_DIGICAM_CONFIGURE)
@@ -2855,6 +2857,8 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
 
                 req.current = current;
                 req.autocontinue = autocontinue;
+
+                req.mission_type = (byte)mission_type;
 
                 req.frame = (byte)frame;
                 req.y = (float)(loc.lng);
@@ -3427,6 +3431,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
 
             if (translateMode(sysid, compid, modein, ref mode))
             {
+                log.Info("setMode " + modein + " (" + mode.custom_mode + ")");
                 setMode(sysid, compid, mode);
             }
         }
@@ -4266,6 +4271,15 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
             {
                 log.Debug("UnSubscribeToPacketType " + msgtype + " " + item);
                 var ans = Subscriptions.Where(a => { return a.Key == msgtype && a.Value == item; });
+                Subscriptions.Remove(ans.First());
+            }
+        }
+        public void UnSubscribeToPacketType(MAVLINK_MSG_ID msgtype)
+        {
+            lock (Subscriptions)
+            {
+                log.Debug("UnSubscribeToPacketType " + msgtype);
+                var ans = Subscriptions.Where(a => { return a.Key == msgtype; });
                 Subscriptions.Remove(ans.First());
             }
         }

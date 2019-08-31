@@ -19,30 +19,62 @@
     </div>
 </div>
 
+<div id="loadingML" style="display: @(Loading ? "block": "none");  position: fixed;  left: 0px;  top: 0px;  width: 100%;  height: 100%;  z-index: 9999;  background: url('//upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Phi_fenomeni.gif/50px-Phi_fenomeni.gif')               50% 50% no-repeat ;">
+
+</div>
+
 @code
 {
     private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+    public static string googleid = "";
+    private bool _loading = true;
+
+    public bool Loading {
+        get { return _loading; }
+        set { log.Info("Loading " + _loading); _loading = value; }
+    }
+
+    [JSInvokable]
+    public static void SetGoogleID(string id)
+    {
+        googleid = id;
+    }
 
     protected override async Task OnInitAsync()
     {
-        var paramdata = "ParameterMetaDataBackup.xml";
-        if (!File.Exists(paramdata))
-        {
-            log.Info("get param");
-            var content = await Http.GetStringAsync((paramdata));
-            log.Info("get param done");
+        GetFile("ParameterMetaDataBackup.xml");
 
-            File.WriteAllText(paramdata, content);
-        }
+        Directory.CreateDirectory("graphs");
+
+        GetFile("graphs/ekf3Graphs.xml");
+        GetFile("graphs/ekfGraphs.xml");
+        GetFile("graphs/mavgraphs.xml");
+        GetFile("graphs/mavgraphs2.xml");
+        GetFile("graphs/mavgraphsMP.xml");
+
+        Loading = false;
     }
 
     protected override void OnAfterRender()
     {
         base.OnAfterRender();
 
-        JSRuntime.InvokeAsync<object>("renderButton", new { });
+        if(googleid == "")
+            JSRuntime.InvokeAsync<object>("renderButton", new { });
 
         Console.WriteLine("MainLayout OnAfterRender Done");
+    }
+
+    async void GetFile(string filename)
+    {
+        if (!File.Exists(filename))
+        {
+            log.Info("get "+filename);
+            var content = await Http.GetStringAsync((filename));
+            log.Info("get "+filename+" done");
+
+            File.WriteAllText(filename, content);
+        }
     }
 }

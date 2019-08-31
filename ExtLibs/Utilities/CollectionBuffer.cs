@@ -14,12 +14,7 @@ namespace MissionPlanner.Utilities
         BinaryLog binlog = new BinaryLog();
 
         // used for fmt messages
-        public DFLog dflog 
-        {
-            get { return _dflog; }
-        }
-
-        DFLog _dflog = new DFLog();
+        public DFLog dflog { get; } = new DFLog();
 
         Stream basestream;
         private int _count;
@@ -43,10 +38,18 @@ namespace MissionPlanner.Utilities
                 messageindexline[a] = new List<uint>();
             }
 
-            basestream = new MemoryStream((int) instream.Length);
-            instream.CopyTo(basestream);
-            basestream.Position = 0;
-            instream.Close();
+            if (instream.CanSeek)
+            {
+                basestream = instream;
+            }
+            else
+            {
+                Console.WriteLine("CollectionBuffer: not seekable - copying to memorystream");
+                basestream = new MemoryStream((int)instream.Length);
+                instream.CopyTo(basestream);
+                basestream.Position = 0;
+                instream.Close();
+            }
 
             if (basestream.ReadByte() == BinaryLog.HEAD_BYTE1)
             {
@@ -56,11 +59,13 @@ namespace MissionPlanner.Utilities
                 }
             }
 
+            Console.WriteLine("Binary: " + binary);
+
             // back to start
             basestream.Position = 0;
             DateTime start = DateTime.Now;
             setlinecount();
-            Console.WriteLine("CollectionBuffer-linecount: " + (DateTime.Now - start).TotalMilliseconds);
+            Console.WriteLine("CollectionBuffer-linecount: " + Count + " time(ms): " + (DateTime.Now - start).TotalMilliseconds);
             basestream.Position = 0;
         }
 
@@ -199,6 +204,8 @@ namespace MissionPlanner.Utilities
 
             BuildUnitMultiList();
 
+            // try get gps time - when a dfitem is created and no valid gpstime has been establish the messages are parsed to get a valid gpstime
+            // here we just force the parsing of gps messages to get the valid board time to gps time offset
             int gpsa = 0;
             foreach (var item in GetEnumeratorType(new[]
             {
@@ -206,8 +213,14 @@ namespace MissionPlanner.Utilities
             }))
             {
                 gpsa++;
+                int status = 0;
+                if (int.TryParse(item["Status"], out status))
+                {
+                    if (status >= 3)
+                        break;
+                }
                 // get first gps time
-                if(gpsa > 10)
+                if (gpsa > 2000)
                     break;
             }
 
@@ -294,9 +307,7 @@ namespace MissionPlanner.Utilities
                     {
                         var items = binlog.ReadMessageObjects(basestream, basestream.Length);
 
-                        //var test = dflog.GetDFItemFromLine(this[index], index);
-
-                        var answer =  new DFLog.DFItem(dflog, items, (int)indexin);
+                        var answer = new DFLog.DFItem(dflog, items, (int)indexin);
 
                         return answer;
                     }
@@ -401,7 +412,7 @@ namespace MissionPlanner.Utilities
         public IEnumerable<DFLog.DFItem> GetEnumeratorType(string[] types)
         {
             // get the ids for the passed in types
-            SortedSet<long> slist = new SortedSet<long>();
+            List<long> slist = new List<long>();
             foreach (var type in types.Distinct())
             {
                 if (dflog.logformat.ContainsKey(type))
@@ -414,6 +425,8 @@ namespace MissionPlanner.Utilities
                     }
                 }
             }
+
+            slist.Sort();
 
             // work through list of lines
             foreach (var l in slist)
