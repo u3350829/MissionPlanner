@@ -97,8 +97,10 @@
       <Private>true</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Management" />
     <Reference Include="System.Speech" />
@@ -441,9 +443,11 @@
       <DependentUpon>FirmwareSelection.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utilities\AltitudeAngel\MissionPlannerStateAdapter.cs" />
+    <Compile Include="Utilities\GimbalPoint.cs" />
     <Compile Include="Utilities\NativeLibrary.cs" />
     <Compile Include="Utilities\Speech.cs" />
     <Compile Include="Utilities\SSHTerminal.cs" />
+    <Compile Include="Utilities\Fence.cs" />
     <Compile Include="Utilities\XTermRBGColors.cs" />
     <Compile Include="Controls\GenOTP.cs">
       <SubType>Form</SubType>
@@ -904,12 +908,10 @@
     <Compile Include="Log\LogIndex.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Log\LogSort.cs" />
     <Compile Include="Log\MatLabForms.cs" />
     <Compile Include="Log\MavlinkLog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Log\Scan.cs" />
     <Compile Include="NoFly\NoFly.cs" />
     <Compile Include="Plugin\Plugin.cs" />
     <Compile Include="Plugin\PluginLoader.cs" />
@@ -962,13 +964,11 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Utilities\Firmware.cs" />
-    <Compile Include="Utilities\GimbalPoint.cs" />
     <Compile Include="Utilities\httpserver.cs" />
     <Compile Include="Utilities\LangUtility.cs" />
     <Compile Include="Utilities\LogAnalyzer.cs" />
     <Compile Include="Utilities\OpticalFlow.cs" />
     <Compile Include="Utilities\ParamFile.cs" />
-    <Compile Include="Utilities\Password.cs" />
     <Compile Include="Utilities\POI.cs" />
     <Compile Include="Utilities\StreamCombiner.cs" />
     <Compile Include="Utilities\StringRedirectWriter.cs" />
@@ -1494,6 +1494,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\RAW_Sensor.resx">
       <DependentUpon>RAW_Sensor.cs</DependentUpon>

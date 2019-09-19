@@ -26,6 +26,7 @@ using GMap.NET.MapProviders;
 using GMap.NET.WindowsForms;
 using log4net;
 using Microsoft.Scripting.Utils;
+using MissionPlanner.ArduPilot;
 using MissionPlanner.Comms;
 using MissionPlanner.Controls;
 using MissionPlanner.GCSViews;
@@ -995,7 +996,7 @@ namespace MissionPlanner
         {
             if (CustomMessageBox.Show("Are you sure you want to upgrade the bootloader? This can brick your board",
                     "BL Update", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == (int)DialogResult.Yes)
-                if (CustomMessageBox.Show("Are you sure you want to upgrade the bootloader? This can brick your board",
+                if (CustomMessageBox.Show("Are you sure you want to upgrade the bootloader? This can brick your board, Please allow 5 mins for this process",
                         "BL Update", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == (int) DialogResult.Yes)
                     if (MainV2.comPort.doCommand(MAVLink.MAV_CMD.FLASH_BOOTLOADER, 0, 0, 0, 0, 290876, 0, 0))
                     {
@@ -1164,6 +1165,46 @@ namespace MissionPlanner
             };
 
             mavlinkNumericUpDown.ShowUserControl();
+        }
+
+        private void But_stayoutest_Click(object sender, EventArgs e)
+        {
+            var list = new List<Locationwp>();
+            var tl = (MainV2.comPort.MAV.cs.Location.gps_offset(-20, -25));
+            var tr = (MainV2.comPort.MAV.cs.Location.gps_offset(50, -25));
+            var br = (MainV2.comPort.MAV.cs.Location.gps_offset(50, 15));
+            var bl = (MainV2.comPort.MAV.cs.Location.gps_offset(-20, 15));
+
+            var cmd = MAVLink.MAV_CMD.FENCE_POLYGON_VERTEX_INCLUSION;
+
+            //MAVLink.mavlink_mission_request_int_t req = new MAVLink.mavlink_mission_request_int_t();
+
+            var frame = (byte)MAVLink.MAV_FRAME.GLOBAL_INT;
+            list.Add(new Locationwp() {alt = 0, frame = frame, id = (ushort) cmd, p1 = 4, lat = tl.Lat, lng = tl.Lng});
+            list.Add(new Locationwp() {alt = 0, frame = frame, id = (ushort) cmd, p1 = 4, lat = tr.Lat, lng = tr.Lng});
+            list.Add(new Locationwp() {alt = 0, frame = frame, id = (ushort) cmd, p1 = 4, lat = br.Lat, lng = br.Lng});
+            list.Add(new Locationwp() {alt = 0, frame = frame, id = (ushort) cmd, p1 = 4, lat = bl.Lat, lng = bl.Lng});
+
+            list.Add(new Locationwp() { alt = 0, frame = frame, id = (ushort)cmd, p1 = 4, lat = tl.Lat, lng = tl.Lng });
+            list.Add(new Locationwp() { alt = 0, frame = frame, id = (ushort)cmd, p1 = 4, lat = tr.Lat, lng = tr.Lng });
+            list.Add(new Locationwp() { alt = 0, frame = frame, id = (ushort)cmd, p1 = 4, lat = br.Lat, lng = br.Lng });
+            list.Add(new Locationwp() { alt = 0, frame = frame, id = (ushort)cmd, p1 = 4, lat = bl.Lat, lng = bl.Lng });
+
+            tl = (MainV2.comPort.MAV.cs.Location.gps_offset(-40, -45));
+            tr = (MainV2.comPort.MAV.cs.Location.gps_offset(20, -45));
+            br = (MainV2.comPort.MAV.cs.Location.gps_offset(20, 20));
+            bl = (MainV2.comPort.MAV.cs.Location.gps_offset(-40, 20));
+
+            list.Add(new Locationwp() { alt = 0, frame = frame, id = (ushort)cmd, p1 = 4, lat = tl.Lat, lng = tl.Lng });
+            list.Add(new Locationwp() { alt = 0, frame = frame, id = (ushort)cmd, p1 = 4, lat = tr.Lat, lng = tr.Lng });
+            list.Add(new Locationwp() { alt = 0, frame = frame, id = (ushort)cmd, p1 = 4, lat = br.Lat, lng = br.Lng });
+            list.Add(new Locationwp() { alt = 0, frame = frame, id = (ushort)cmd, p1 = 4, lat = bl.Lat, lng = bl.Lng });
+
+            //mav_mission.upload(MainV2.comPort, MAVLink.MAV_MISSION_TYPE.FENCE, list);
+
+            var mission = mav_mission.download(MainV2.comPort, MAVLink.MAV_MISSION_TYPE.MISSION);
+            var fence = mav_mission.download(MainV2.comPort, MAVLink.MAV_MISSION_TYPE.FENCE);
+            var rally = mav_mission.download(MainV2.comPort, MAVLink.MAV_MISSION_TYPE.RALLY);
         }
     }
 }
