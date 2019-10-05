@@ -621,7 +621,12 @@ namespace MissionPlanner
             catch { }
 
             Warnings.CustomWarning.defaultsrc = comPort.MAV.cs;
-            Warnings.WarningEngine.Start();
+            Warnings.WarningEngine.Start(speechEnable ? speechEngine : null);
+            Warnings.WarningEngine.WarningMessage += (sender, s) =>
+            {
+                MainV2.comPort.MAV.cs.messageHigh = s;
+                MainV2.comPort.MAV.cs.messageHighTime = DateTime.Now;
+            };
 
             // proxy loader - dll load now instead of on config form load
             new Transition(new TransitionType_EaseInEaseOut(2000));
@@ -1702,38 +1707,45 @@ namespace MissionPlanner
                 if (MainV2.comPort.MAV.param.ContainsKey("RALLY_TOTAL") &&
                     int.Parse(MainV2.comPort.MAV.param["RALLY_TOTAL"].ToString()) > 0)
                 {
-                    FlightPlanner.getRallyPointsToolStripMenuItem_Click(null, null);
-
-                    double maxdist = 0;
-
-                    foreach (var rally in comPort.MAV.rallypoints)
+                    try
                     {
-                        foreach (var rally1 in comPort.MAV.rallypoints)
+                        FlightPlanner.getRallyPointsToolStripMenuItem_Click(null, null);
+
+                        double maxdist = 0;
+
+                        foreach (var rally in comPort.MAV.rallypoints)
                         {
-                            var pnt1 = new PointLatLngAlt(rally.Value.lat / 10000000.0f, rally.Value.lng / 10000000.0f);
-                            var pnt2 = new PointLatLngAlt(rally1.Value.lat / 10000000.0f, rally1.Value.lng / 10000000.0f);
+                            foreach (var rally1 in comPort.MAV.rallypoints)
+                            {
+                                var pnt1 = new PointLatLngAlt(rally.Value.y / 10000000.0f, rally.Value.x / 10000000.0f);
+                                var pnt2 = new PointLatLngAlt(rally1.Value.y / 10000000.0f,
+                                    rally1.Value.x / 10000000.0f);
 
-                            var dist = pnt1.GetDistance(pnt2);
+                                var dist = pnt1.GetDistance(pnt2);
 
-                            maxdist = Math.Max(maxdist, dist);
+                                maxdist = Math.Max(maxdist, dist);
+                            }
                         }
-                    }
 
-                    if (comPort.MAV.param.ContainsKey("RALLY_LIMIT_KM") &&
-                        (maxdist / 1000.0) > (float)comPort.MAV.param["RALLY_LIMIT_KM"])
-                    {
-                        CustomMessageBox.Show(Strings.Warningrallypointdistance + " " +
-                                              (maxdist / 1000.0).ToString("0.00") + " > " +
-                                              (float)comPort.MAV.param["RALLY_LIMIT_KM"]);
-                    }
+                        if (comPort.MAV.param.ContainsKey("RALLY_LIMIT_KM") &&
+                            (maxdist / 1000.0) > (float) comPort.MAV.param["RALLY_LIMIT_KM"])
+                        {
+                            CustomMessageBox.Show(Strings.Warningrallypointdistance + " " +
+                                                  (maxdist / 1000.0).ToString("0.00") + " > " +
+                                                  (float) comPort.MAV.param["RALLY_LIMIT_KM"]);
+                        }
+                    } catch (Exception ex) { log.Warn(ex); }
                 }
-
+   
                 // get any fences
                 if (MainV2.comPort.MAV.param.ContainsKey("FENCE_TOTAL") &&
                     int.Parse(MainV2.comPort.MAV.param["FENCE_TOTAL"].ToString()) > 1 &&
                     MainV2.comPort.MAV.param.ContainsKey("FENCE_ACTION"))
                 {
-                    FlightPlanner.GeoFencedownloadToolStripMenuItem_Click(null, null);
+                    try
+                    {
+                        FlightPlanner.GeoFencedownloadToolStripMenuItem_Click(null, null);
+                    } catch (Exception ex) { log.Warn(ex); }
                 }
                 //Add HUD custom items source 
                 HUD.Custom.src = MainV2.comPort.MAV.cs;
@@ -2672,8 +2684,12 @@ namespace MissionPlanner
                         {
                             System.Threading.ThreadPool.QueueUserWorkItem(state =>
                             {
+                                Thread.CurrentThread.Name = "Arm State change";
                                 try
                                 {
+                                    while (comPort.giveComport == true)
+                                        Thread.Sleep(100);
+
                                     MainV2.comPort.MAV.cs.HomeLocation = new PointLatLngAlt(MainV2.comPort.getWP(0));
                                     if (MyView.current != null && MyView.current.Name == "FlightPlanner")
                                     {
@@ -2753,7 +2769,7 @@ namespace MissionPlanner
                                 try
                                 {
                                     // poll for version if we dont have it - every mav every port
-                                    if (!MAV.cs.armed && (DateTime.Now.Second % 20) == 0 && MAV.cs.version < new Version(0, 1))
+                                    if (!port.giveComport && !MAV.cs.armed && (DateTime.Now.Second % 20) == 0 && MAV.cs.version < new Version(0, 1))
                                         port.getVersion(MAV.sysid, MAV.compid, false);
 
                                     // are we talking to a mavlink2 device
@@ -2853,7 +2869,9 @@ namespace MissionPlanner
                             break;
                         }
 
-                        while (port.BaseStream.IsOpen && port.BaseStream.BytesToRead > minbytes &&
+                        var btr = port.BaseStream.BytesToRead;
+
+                        while (port.BaseStream.IsOpen && btr > minbytes &&
                                port.giveComport == false && serialThread)
                         {
                             try

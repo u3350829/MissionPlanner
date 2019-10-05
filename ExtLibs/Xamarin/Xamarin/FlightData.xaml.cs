@@ -59,12 +59,11 @@ namespace Xamarin
 
             GMap.NET.GMaps.Instance.PrimaryCache = new MissionPlanner.Maps.MyImageCache();
 
-
             GMapControl.MapProvider = GMapProviders.GoogleSatelliteMap;
 
             GMapControl.MapScaleInfoEnabled = true;
-            GMapControl.ScalePen = new Pen(Color.Orange);
-            GMapControl.Position = new PointLatLng(-35, 117.89);
+            GMapControl.ScalePen = new Pen(Color.White);
+            GMapControl.Position = new PointLatLng(0,0);
 
             this.gMapControl1.OnPositionChanged += new GMap.NET.PositionChanged(this.gMapControl1_OnPositionChanged);
            // this.gMapControl1.Click += new System.EventHandler(this.gMapControl1_Click);
@@ -507,7 +506,8 @@ namespace Xamarin
 
                                 foreach (var mark in MainV2.comPort.MAV.rallypoints.Values)
                                 {
-                                    rallypointoverlay.Markers.Add(new GMapMarkerRallyPt(mark));
+                                    rallypointoverlay.Markers.Add(
+                                        new GMapMarkerRallyPt(new PointLatLngAlt(mark.x / 1e7, mark.y / 1e7, mark.z)));
                                 }
 
                                 // optional on Flight data

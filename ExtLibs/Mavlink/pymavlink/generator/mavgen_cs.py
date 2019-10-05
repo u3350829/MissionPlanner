@@ -177,7 +177,7 @@ def generate_message_enum_types(xml):
         for fld in m.fields:
             if fld.array_length == 0:
                 fld.type = map[fld.type]
-            if fld.enum != "":
+            if fld.enum != "" and fld.array_length == 0:
                 enumtypes[fld.enum] = fld.type
                 print fld.enum + " is type " + fld.type
 
@@ -191,6 +191,9 @@ def generate_message_enums(f, xml):
     # add some extra field attributes for convenience with arrays
     for m in xml.enum:
         m.description = cleanText(m.description)
+        m.flags = ""
+        if m.description.lower().find("bitmask") >= 0: # or m.name.lower().find("_flags") >= 0:
+            m.flags = "[Flags]\n\t"
         m.enumtype = enumtypes.get(m.name,"int /*default*/")
         for fe in m.entry:
             if fe.name.endswith('ENUM_END'):
@@ -205,7 +208,7 @@ def generate_message_enums(f, xml):
     t.write(f, '''
     ${{enum:
     ///<summary> ${description} </summary>
-    public enum ${name}: ${enumtype}
+    ${flags}public enum ${name}: ${enumtype}
     {
         ${{entry:    ///<summary> ${description} |${{param:${description}| }} </summary>
         [Description("${description}")]

@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using DirectShowLib;
+using Flurl.Util;
 using GMap.NET;
 using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
@@ -1225,8 +1226,22 @@ namespace MissionPlanner.GCSViews
 
                             foreach (var mark in MainV2.comPort.MAV.rallypoints.Values)
                             {
-                                rallypointoverlay.Markers.Add(new GMapMarkerRallyPt(mark));
+                                rallypointoverlay.Markers.Add(new GMapMarkerRallyPt(new PointLatLngAlt(mark)));
                             }
+
+                            geofence.Clear();
+
+                            var fenceoverlay = new WPOverlay();
+                            fenceoverlay.overlay.Id = "fence";
+
+                            fenceoverlay.CreateOverlay(MAVLink.MAV_FRAME.GLOBAL, PointLatLngAlt.Zero, MainV2.comPort.MAV.fencepoints.Values.Select(a => (Locationwp)a).ToList(), 0, 0);
+
+                            var fence = mymap.Overlays.Where(a => a.Id == "fence");
+                            if (fence.Count() > 0)
+                                mymap.Overlays.Remove(fence.First());
+                            mymap.Overlays.Add(fenceoverlay.overlay);
+
+                            fenceoverlay.overlay.ForceUpdate();
 
                             // optional on Flight data
                             if (MainV2.ShowAirports)
@@ -2125,7 +2140,6 @@ namespace MissionPlanner.GCSViews
             }
             catch (Exception ex)
             {
-                MainV2.comPort.giveComport = false;
                 CustomMessageBox.Show(Strings.CommandFailed + ex.Message, Strings.ERROR);
             }
         }
@@ -4053,13 +4067,20 @@ namespace MissionPlanner.GCSViews
         {
             if (MainV2.comPort.BaseStream.IsOpen)
             {
-                flyToHereAltToolStripMenuItem_Click(null, null);
+                string alt = Settings.Instance["takeoff_alt", "5"];
+
+                if (DialogResult.Cancel == InputBox.Show("Enter Alt", "Enter Takeoff Alt", ref alt))
+                    return;
+
+                var altf = float.Parse(alt, CultureInfo.InvariantCulture);
+
+                Settings.Instance["takeoff_alt"] = altf.ToString();
 
                 MainV2.comPort.setMode("GUIDED");
 
                 try
                 {
-                    MainV2.comPort.doCommand(MAVLink.MAV_CMD.TAKEOFF, 0, 0, 0, 0, 0, 0, MainV2.comPort.MAV.GuidedMode.z);
+                    MainV2.comPort.doCommand(MAVLink.MAV_CMD.TAKEOFF, 0, 0, 0, 0, 0, 0, altf);
                 }
                 catch
                 {
