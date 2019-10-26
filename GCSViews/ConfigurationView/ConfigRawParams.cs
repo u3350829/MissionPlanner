@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using log4net;
+using Microsoft.Scripting.Utils;
 using MissionPlanner.Controls;
 using MissionPlanner.Utilities;
 
@@ -58,9 +59,9 @@ namespace MissionPlanner.GCSViews.ConfigurationView
 
             foreach (DataGridViewColumn col in Params.Columns)
             {
-                if (!String.IsNullOrEmpty(Settings.Instance["rawparam_" + col.Name + "_width"]))
+                if (!String.IsNullOrEmpty(Settings.Instance["rawparam_" + col.Name + "_widthpercent"]))
                 {
-                    col.Width = Math.Max(50,Settings.Instance.GetInt32("rawparam_" + col.Name + "_width"));
+                    col.Width = (int)((Math.Max(5, Settings.Instance.GetInt32("rawparam_" + col.Name + "_widthpercent")) / 100.0) * Params.Width);
                     log.InfoFormat("{0} to {1}", col.Name, col.Width);
                 }
             }
@@ -80,7 +81,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
         {
             foreach (DataGridViewColumn col in Params.Columns)
             {
-                Settings.Instance["rawparam_" + col.Name + "_width"] = col.Width.ToString();
+                Settings.Instance["rawparam_" + col.Name + "_widthpercent"] = ((col.Width / (double)Params.Width)*100.0).ToString("0");
             }
         }
 
@@ -231,13 +232,20 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                 return;
 
             // sort with enable at the bottom - this ensures params are set before the function is disabled
-            var temp = new List<string>();
-            foreach (var item in _changes.Keys)
-            {
-                temp.Add((string)item);
-            }
+            var temp = _changes.Keys.Select(a => (string) a).ToList();
 
             temp.SortENABLE();
+
+            bool enable = temp.Any(a => a.EndsWith("_ENABLE"));
+
+            if (enable)
+            {
+                CustomMessageBox.Show(
+                    "You have changed an Enable parameter. You may need to do a full param refresh to show all params",
+                    "Params");
+            }
+
+            int error = 0;
 
             foreach (string value in temp)
             {
@@ -283,11 +291,16 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                 }
                 catch
                 {
+                    error++;
                     CustomMessageBox.Show("Set " + value + " Failed");
                 }
             }
 
-            CustomMessageBox.Show("Parameters successfully saved.", "Saved");
+            if(error > 0)
+                CustomMessageBox.Show("Not all parameters successfully saved.", "Saved");
+            else
+                CustomMessageBox.Show("Parameters successfully saved.", "Saved");
+
         }
 
         private void BUT_compare_Click(object sender, EventArgs e)

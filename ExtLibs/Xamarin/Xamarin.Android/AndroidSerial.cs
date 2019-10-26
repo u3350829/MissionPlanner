@@ -16,6 +16,15 @@ namespace MissionPlanner.Comms
         public AndroidSerial(SerialInputOutputManager serialIoManager)
         {
             this.serialIoManager = serialIoManager;
+
+            serialIoManager.DataReceived += (sender, e) =>
+            {
+                foreach (var b in e.Data)
+                {
+                    readbuffer.Add(b);
+                }
+            };
+            serialIoManager.ErrorReceived += (sender, e) => {  };
         }
 
         public override bool CanRead => true;
@@ -144,6 +153,12 @@ namespace MissionPlanner.Comms
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            var deadline = DateTime.Now.AddMilliseconds(ReadTimeout);
+            do
+            {
+                Thread.Sleep(1);
+            } while (readbuffer.Length() < count && DateTime.Now < deadline);
+
             var read = Math.Min(count, readbuffer.Length());
             for (int a = 0; a < read; a++)
             {
@@ -154,6 +169,7 @@ namespace MissionPlanner.Comms
 
         public override void Flush()
         {
+            Thread.Sleep(1);
         }
 
         public override long Seek(long offset, SeekOrigin origin)

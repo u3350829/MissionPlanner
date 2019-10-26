@@ -352,6 +352,7 @@
     <PackageReference Include="zlib.net" version="1.0.4.0" targetFramework="net40" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Antenna\TrackerGeneric.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Controls\ConnectionOptions.cs">
       <SubType>Form</SubType>
@@ -439,6 +440,7 @@
     <Compile Include="Joystick\JoystickAxis.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Log\MavlinkLogBase.cs" />
     <Compile Include="MainV2.Designer.cs">
       <DependentUpon>MainV2.cs</DependentUpon>
     </Compile>
@@ -457,11 +459,9 @@
       <DependentUpon>FirmwareSelection.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utilities\AltitudeAngel\MissionPlannerStateAdapter.cs" />
-    <Compile Include="Utilities\GimbalPoint.cs" />
     <Compile Include="Utilities\NativeLibrary.cs" />
     <Compile Include="Utilities\Speech.cs" />
     <Compile Include="Utilities\SSHTerminal.cs" />
-    <Compile Include="Utilities\XTermRBGColors.cs" />
     <Compile Include="Grid\camerainfo.cs" />
     <Compile Include="Grid\GridData.cs" />
     <Compile Include="L10N.cs" />
@@ -525,7 +525,7 @@
     <Compile Include="temp.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Antenna\Tracker.cs">
+    <Compile Include="Antenna\TrackerUI.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Controls\AuthKeys.cs">
@@ -974,13 +974,8 @@
     <Compile Include="Utilities\httpserver.cs" />
     <Compile Include="Utilities\LangUtility.cs" />
     <Compile Include="Utilities\LogAnalyzer.cs" />
-    <Compile Include="Utilities\OpticalFlow.cs" />
-    <Compile Include="Utilities\ParamFile.cs" />
     <Compile Include="Utilities\POI.cs" />
-    <Compile Include="Utilities\StreamCombiner.cs" />
-    <Compile Include="Utilities\StringRedirectWriter.cs" />
     <Compile Include="Utilities\ThemeManager.cs" />
-    <Compile Include="Utilities\Tracking.cs" />
     <Compile Include="Utilities\GStreamerUI.cs" />
     <Compile Include="Utilities\Update.cs" />
     <Compile Include="Utilities\Win32DeviceMgnt.cs" />
@@ -1032,8 +1027,8 @@
     <Compile Include="Controls\SerialOutputPass.Designer.cs">
       <DependentUpon>SerialOutputPass.cs</DependentUpon>
     </Compile>
-    <Compile Include="Antenna\Tracker.Designer.cs">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <Compile Include="Antenna\TrackerUI.Designer.cs">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\AuthKeys.Designer.cs">
       <DependentUpon>AuthKeys.cs</DependentUpon>
@@ -1712,47 +1707,47 @@
     <EmbeddedResource Include="temp.resx">
       <DependentUpon>temp.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.ar.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.ar.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.az-Latn-AZ.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.az-Latn-AZ.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.de-DE.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.de-DE.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.fr.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.fr.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.id-ID.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.id-ID.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.it-IT.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.it-IT.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.ko-KR.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.ko-KR.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.pt.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.pt.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.ru-KZ.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.ru-KZ.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.tr.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.tr.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.zh-Hans.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.zh-Hans.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.zh-Hant.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.zh-Hant.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Antenna\Tracker.zh-TW.resx">
-      <DependentUpon>Tracker.cs</DependentUpon>
+    <EmbeddedResource Include="Antenna\TrackerUI.zh-TW.resx">
+      <DependentUpon>TrackerUI.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\AuthKeys.resx">
       <DependentUpon>AuthKeys.cs</DependentUpon>
@@ -4498,7 +4493,6 @@
     <None Include="m3u\networklink.kml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="MissionPlanner.GCSViews.ConfigurationView.UAVCANModel.datasource" />
     <None Include="NoFly\Areas-Lisboa.kmz">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

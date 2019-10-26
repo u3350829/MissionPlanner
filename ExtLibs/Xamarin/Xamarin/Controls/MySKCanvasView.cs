@@ -1,24 +1,18 @@
 ﻿using MissionPlanner.Utilities.Drawing;
-using OpenTK.Graphics;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using MissionPlanner.Utilities;
-using MissionPlanner.Utilities.Drawing;
 using Xamarin.Forms;
-using Graphics = MissionPlanner.Utilities.Drawing.Graphics;
 using Color = System.Drawing.Color;
 using Font = MissionPlanner.Utilities.Drawing.Font;
+using Graphics = MissionPlanner.Utilities.Drawing.Graphics;
 using Image = MissionPlanner.Utilities.Drawing.Image;
-using Rectangle = System.Drawing.Rectangle;
-using PointF = System.Drawing.PointF;
-using RectangleF = System.Drawing.RectangleF;
 using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
 using Size = System.Drawing.Size;
-using SizeF = System.Drawing.SizeF;
 
 namespace Xamarin.Controls
 {
@@ -282,6 +276,7 @@ namespace Xamarin.Controls
             //throw new NotImplementedException();
         }
 
+        private DateTime lastrender = DateTime.MinValue;
         protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
         {
             //     base.OnPaintSurface(e);
@@ -290,6 +285,12 @@ namespace Xamarin.Controls
             //  protected override void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
             //  {
 
+            if (lastrender.AddMilliseconds(30) > DateTime.Now)
+                return;
+
+            base.OnPaintSurface(e);
+
+            lastrender = DateTime.Now;
             var start = DateTime.Now;
             pendingredraw = false;
             if (!started)
@@ -299,12 +300,12 @@ namespace Xamarin.Controls
             }
 
             e.Surface.Canvas.Clear(SKColors.AliceBlue);
-            base.OnPaintSurface(e);
+           
             var sk = new Graphics(e.Surface);
             OnPaint(new PaintEventArgs(sk, ClientRectangle));
             sk.Flush();
-
-            System.Diagnostics.Debug.WriteLine("OnPaintSurface " + (DateTime.Now - start).TotalSeconds);
+          
+            System.Diagnostics.Debug.WriteLine(this.GetType() + " OnPaintSurface " + (DateTime.Now - start).TotalSeconds);
         }
 
         protected virtual void OnResize(EventArgs eventArgs)
@@ -405,6 +406,9 @@ namespace Xamarin.Controls
                     mousewheeldelta = delta.Length;
                 }
                 OnMouseEnter(null);
+                // set mouse centre on pinch
+                OnMouseMove(mouse);
+                // do the scroll
                 OnMouseWheel(mouse);
                 OnMouseLeave(null);
             }
@@ -444,7 +448,7 @@ namespace Xamarin.Controls
                     break;
                 case SKTouchAction.Moved:
                     // the stroke, while pressed
-                    if (e.InContact)
+                    if (e.InContact && temporaryPaths.ContainsKey(e.Id))
                         temporaryPaths[e.Id].LineTo(e.Location);
                     break;
                 case SKTouchAction.Released:

@@ -43,7 +43,7 @@ namespace MissionPlanner.Maps
             get { return id; }
         }
 
-        readonly string name = "MapBox Custom";
+        readonly string name = "MapBox Satellite";
 
         public override string Name
         {

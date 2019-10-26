@@ -14,6 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\test\FirmwareSelection.xaml.cs" Link="Linked\FirmwareSelection.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -22,13 +26,28 @@
     <PackageReference Include="System.Linq" Version="4.3.0" />
     <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
     <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
+    <PackageReference Include="Xam.Plugin.TabView" Version="1.0.4" />
+    <PackageReference Include="Xamarin.Plugin.FilePicker" Version="2.1.34" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\..\..\test\FirmwareSelection.xaml" Link="Linked\FirmwareSelection.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\7zip\7zip.csproj" />
+    <ProjectReference Include="..\..\alglibnet\alglibnet.csproj" />
     <ProjectReference Include="..\..\ArduPilot\MissionPlanner.ArduPilot.csproj" />
+    <ProjectReference Include="..\..\BouncyCastle\BouncyCastle.csproj" />
     <ProjectReference Include="..\..\Comms\MissionPlanner.Comms.csproj" />
+    <ProjectReference Include="..\..\GeoUtility\GeoUtility.csproj" />
     <ProjectReference Include="..\..\GMap.NET.Core\GMap.NET.Core.csproj" />
+    <ProjectReference Include="..\..\ICSharpCode.SharpZipLib\ICSharpCode.SharpZipLib.csproj" />
+    <ProjectReference Include="..\..\Interfaces\Interfaces.csproj" />
     <ProjectReference Include="..\..\Mavlink\MAVLink.csproj" />
+    <ProjectReference Include="..\..\px4uploader\px4uploader.csproj" />
     <ProjectReference Include="..\..\Strings\MissionPlanner.Strings.csproj" />
     <ProjectReference Include="..\..\Utilities\MissionPlanner.Utilities.csproj" />
   </ItemGroup>
